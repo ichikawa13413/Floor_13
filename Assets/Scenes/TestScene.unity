@@ -313,13 +313,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalRotation: {x: 0.018146452, y: -0, z: -0, w: 0.9998354}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 2033105198463610200}
+  m_LocalEulerAnglesHint: {x: 2.08, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1155,6 +1155,7 @@ Transform:
   m_Children:
   - {fileID: 8213380827303425832}
   - {fileID: 2568982032611746675}
+  - {fileID: 330585546}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2109002613690212337
@@ -2028,11 +2029,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 997518067}
-  speed: 10
+  speed: 200
   jumpForce: 2.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
+  currentCamera: {fileID: 330585545}
+  lookSpeed: 250
+  lookLimit: 85
 --- !u!136 &5392821631121995558
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2798,7 +2802,6 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 2033105198463610200}
