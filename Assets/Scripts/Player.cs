@@ -74,20 +74,23 @@ public class Player : MonoBehaviour
 
         //キャラクターの向きを考慮して計算
         Vector3 moveDirection = (_transform.forward * movement.z + _transform.right * movement.x).normalized;
-        
-        rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z) * speed * Time.fixedDeltaTime;
+
+        moveDirection.x = moveDirection.x * speed * Time.fixedDeltaTime;
+        moveDirection.z = moveDirection.z * speed * Time.fixedDeltaTime;
+        rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
     }
 
     private void ChangeDirection(InputAction.CallbackContext context)
     {
-        direction = context.ReadValue<Vector2>().normalized;
+        direction = context.ReadValue<Vector2>();
     }
 
     private void OnJump(InputAction.CallbackContext context)
     {
         if (isGround)
         {
-            rb.linearVelocity = new Vector3(0, jumpForce, 0);
+            rb.AddForce(Vector3.up * jumpForce,ForceMode.Impulse);
+            //rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
         }
     }
 
