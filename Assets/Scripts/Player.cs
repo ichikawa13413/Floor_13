@@ -11,6 +11,14 @@ public class Player : MonoBehaviour
     [SerializeField] private float speed;
     private Vector2 direction;
 
+    //--スタミナ関連--
+    [SerializeField] private float minusRate;
+    [SerializeField] private float plusRate;
+    [SerializeField] private float dashSpeed;
+    [SerializeField] private float maxStamina;
+    private float stamina;
+    private bool isDashing;
+
     //--ジャンプ関係--
     [SerializeField] private float jumpForce;
     [SerializeField] private LayerMask groundLayer;
@@ -45,6 +53,9 @@ public class Player : MonoBehaviour
         isGround = Physics.CheckSphere(_transform.position, 0.1f, groundLayer);
 
         LookInput();
+        DashFunction();
+        Debug.Log(stamina);
+        Debug.Log(isDashing);
     }
 
     private void OnEnable()
@@ -55,6 +66,8 @@ public class Player : MonoBehaviour
         input.actions["Jump"].performed += OnJump;
         input.actions["Look"].performed += OnLook;
         input.actions["Look"].canceled += OnLook;
+        input.actions["Dash"].performed += OnDashStart;
+        input.actions["Dash"].canceled += OnDashEnd;
     }
 
     private void OnDisable()
@@ -65,6 +78,8 @@ public class Player : MonoBehaviour
         input.actions["Jump"].performed -= OnJump;
         input.actions["Look"].performed -= OnLook;
         input.actions["Look"].canceled -= OnLook;
+        input.actions["Dash"].performed -= OnDashStart;
+        input.actions["Dash"].canceled -= OnDashEnd;
     }
 
     private void MoveInput()
@@ -75,8 +90,11 @@ public class Player : MonoBehaviour
         //キャラクターの向きを考慮して計算
         Vector3 moveDirection = (_transform.forward * movement.z + _transform.right * movement.x).normalized;
 
-        moveDirection.x = moveDirection.x * speed * Time.fixedDeltaTime;
-        moveDirection.z = moveDirection.z * speed * Time.fixedDeltaTime;
+        //ダッシュ中であったらdashSpeedを使う
+        float getSpeed = isDashing ? dashSpeed : speed;
+
+        moveDirection.x = moveDirection.x * getSpeed * Time.fixedDeltaTime;
+        moveDirection.z = moveDirection.z * getSpeed * Time.fixedDeltaTime;
         rb.linearVelocity = new Vector3(moveDirection.x, rb.linearVelocity.y, moveDirection.z);
     }
 
@@ -90,7 +108,6 @@ public class Player : MonoBehaviour
         if (isGround)
         {
             rb.AddForce(Vector3.up * jumpForce,ForceMode.Impulse);
-            //rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
         }
     }
 
@@ -112,5 +129,33 @@ public class Player : MonoBehaviour
         xRotation -= yDirection;
         xRotation = Mathf.Clamp(xRotation, -lookLimit, lookLimit);
         currentCamera.transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
+    }
+
+    private void DashFunction()
+    {
+        if (isDashing)
+        {
+            stamina -= minusRate * Time.deltaTime;
+            if (stamina <= 0)
+            {
+                isDashing = false;
+                stamina = 0;
+            }
+        }
+        else if (!isDashing)
+        {
+            stamina += plusRate * Time.deltaTime;
+            stamina = Mathf.Min(stamina,maxStamina);
+        }
+    }
+
+    private void OnDashStart(InputAction.CallbackContext context)
+    {
+        isDashing = true;
+    }
+
+    private void OnDashEnd(InputAction.CallbackContext context)
+    {
+        isDashing = false;
     }
 }

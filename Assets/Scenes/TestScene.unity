@@ -2030,6 +2030,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   input: {fileID: 997518067}
   speed: 200
+  minusRate: 15
+  plusRate: 12
+  dashSpeed: 300
+  maxStamina: 100
   jumpForce: 2
   groundLayer:
     serializedVersion: 2
