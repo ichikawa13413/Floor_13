@@ -28,13 +28,17 @@ public class Player : MonoBehaviour
     [SerializeField] private Camera currentCamera;
     [SerializeField] private float lookSpeed;
     [SerializeField] private float lookLimit;
+    [SerializeField] private Vector3 fpsViwe;
+    [SerializeField] private Vector3 tpsViwe;
     private Vector2 cameraDirection;
     private float xRotation = 0;
+    private bool OnChange;//trueÇÃéûÇÕTPSéãì_Ç…Ç»Ç¡ÇƒÇ¢ÇÈéûÅAfalseÇÃéûÇÕFPSéãì_Ç…Ç»Ç¡ÇƒÇ¢ÇÈéû
 
     private void Awake()
     {
         _transform = transform;
         rb = GetComponent<Rigidbody>();
+        OnChange = false;
     }
 
     private void Start()
@@ -68,6 +72,7 @@ public class Player : MonoBehaviour
         input.actions["Look"].canceled += OnLook;
         input.actions["Dash"].performed += OnDashStart;
         input.actions["Dash"].canceled += OnDashEnd;
+        input.actions["ChangeViwe"].performed += OnChangeViwe;
     }
 
     private void OnDisable()
@@ -80,6 +85,7 @@ public class Player : MonoBehaviour
         input.actions["Look"].canceled -= OnLook;
         input.actions["Dash"].performed -= OnDashStart;
         input.actions["Dash"].canceled -= OnDashEnd;
+        input.actions["ChangeViwe"].performed -= OnChangeViwe;
     }
 
     private void MoveInput()
@@ -157,5 +163,23 @@ public class Player : MonoBehaviour
     private void OnDashEnd(InputAction.CallbackContext context)
     {
         isDashing = false;
+    }
+
+    private void OnChangeViwe(InputAction.CallbackContext context)
+    {
+        if (OnChange)
+        {
+#if UNITY_EDITOR
+            currentCamera.transform.localPosition = fpsViwe;
+            OnChange = false;
+#endif
+        }
+        else
+        {
+#if UNITY_EDITOR
+            currentCamera.transform.localPosition = tpsViwe;
+            OnChange =true;
+#endif
+        }
     }
 }

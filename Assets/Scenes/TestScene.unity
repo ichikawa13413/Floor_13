@@ -313,13 +313,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.018146452, y: -0, z: -0, w: 0.9998354}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2033105198463610200}
-  m_LocalEulerAnglesHint: {x: 2.08, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1977,7 +1977,7 @@ Animator:
   m_GameObject: {fileID: 1692468127073056738}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: f1e8e1bfafe7fa241ba6b4181f3eba85, type: 3}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6f591ab229e5859408c4886d261cfc2a, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -2041,6 +2041,8 @@ MonoBehaviour:
   currentCamera: {fileID: 330585545}
   lookSpeed: 250
   lookLimit: 85
+  fpsViwe: {x: 0, y: 1.5, z: 0}
+  tpsViwe: {x: 0, y: 2.5, z: -4.5}
 --- !u!136 &5392821631121995558
 CapsuleCollider:
   m_ObjectHideFlags: 0
