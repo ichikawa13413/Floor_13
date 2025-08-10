@@ -34,10 +34,17 @@ public class Player : MonoBehaviour
     private float xRotation = 0;
     private bool OnChange;//trueの時はTPS視点になっている時、falseの時はFPS視点になっている時
 
+    //--アニメーション関係--
+    private Animator _animator;
+    private static readonly int XHash = Animator.StringToHash("X");
+    private static readonly int YHash = Animator.StringToHash("Y");
+    private static readonly int SpeedHash = Animator.StringToHash("Speed");
+
     private void Awake()
     {
         _transform = transform;
         rb = GetComponent<Rigidbody>();
+        _animator = GetComponent<Animator>();
         OnChange = false;
     }
 
@@ -106,7 +113,15 @@ public class Player : MonoBehaviour
 
     private void ChangeDirection(InputAction.CallbackContext context)
     {
-        direction = context.ReadValue<Vector2>();
+        var vector2 = context.ReadValue<Vector2>();
+        direction = vector2;
+
+        _animator.SetFloat(SpeedHash, vector2.magnitude);
+        if (vector2 != Vector2.zero)
+        {
+            _animator.SetFloat(XHash, vector2.x);
+            _animator.SetFloat(YHash, vector2.y);
+        }
     }
 
     private void OnJump(InputAction.CallbackContext context)
