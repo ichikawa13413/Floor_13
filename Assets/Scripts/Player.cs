@@ -15,8 +15,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float minusRate;
     [SerializeField] private float plusRate;
     [SerializeField] private float dashSpeed;
-    [SerializeField] private float maxStamina;
-    private float stamina;
+    public float maxStamina {  get; private set; }
+    public float stamina {  get; private set; }
     private bool isDashing;
 
     //--ƒWƒƒƒ“ƒvŠÖŒW--
@@ -49,6 +49,7 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         _animator = GetComponent<Animator>();
         OnChange = false;
+        maxStamina = 100;
     }
 
     private void Start()
