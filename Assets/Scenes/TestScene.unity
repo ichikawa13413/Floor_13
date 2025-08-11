@@ -2034,7 +2034,7 @@ MonoBehaviour:
   plusRate: 12
   dashSpeed: 300
   maxStamina: 100
-  jumpForce: 2
+  jumpForce: 4.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 256

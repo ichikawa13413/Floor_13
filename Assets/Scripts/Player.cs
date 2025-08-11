@@ -39,6 +39,9 @@ public class Player : MonoBehaviour
     private static readonly int XHash = Animator.StringToHash("X");
     private static readonly int YHash = Animator.StringToHash("Y");
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
+    private static readonly int isRunHash = Animator.StringToHash("isRun");
+    private static readonly int jumpHash = Animator.StringToHash("Jump");
+    private static readonly int isGroundHash = Animator.StringToHash("isGround");
 
     private void Awake()
     {
@@ -67,6 +70,8 @@ public class Player : MonoBehaviour
         DashFunction();
         Debug.Log(stamina);
         Debug.Log(isDashing);
+        _animator.SetBool(isRunHash, isDashing);
+        _animator.SetBool(isGroundHash, isGround);
     }
 
     private void OnEnable()
@@ -129,6 +134,7 @@ public class Player : MonoBehaviour
         if (isGround)
         {
             rb.AddForce(Vector3.up * jumpForce,ForceMode.Impulse);
+            _animator.SetTrigger(jumpHash);
         }
     }
 
