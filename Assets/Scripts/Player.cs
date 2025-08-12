@@ -11,10 +11,11 @@ public class Player : MonoBehaviour
     [SerializeField] private float speed;
     private Vector2 direction;
 
-    //--スタミナ関連--
+    //--スタミナ、ダッシュ関連--
     [SerializeField] private float minusRate;
     [SerializeField] private float plusRate;
     [SerializeField] private float dashSpeed;
+    [SerializeField] private int maxDashAngle;
     public float maxStamina {  get; private set; }
     public float stamina {  get; private set; }
     private bool isDashing;
@@ -69,8 +70,7 @@ public class Player : MonoBehaviour
 
         LookInput();
         DashFunction();
-        Debug.Log(stamina);
-        Debug.Log(isDashing);
+        
         _animator.SetBool(isRunHash, isDashing);
         _animator.SetBool(isGroundHash, isGround);
     }
@@ -179,7 +179,14 @@ public class Player : MonoBehaviour
 
     private void OnDashStart(InputAction.CallbackContext context)
     {
-        isDashing = true;
+        if (IsLimitDash(direction))
+        {
+            isDashing = true;
+        }
+        else
+        {
+            isDashing = false;
+        }
     }
 
     private void OnDashEnd(InputAction.CallbackContext context)
@@ -203,5 +210,23 @@ public class Player : MonoBehaviour
             OnChange =true;
 #endif
         }
+    }
+
+    /// <summary>
+    /// ダッシュできる入力範囲を制限
+    /// trueだったらダッシュ条件を満たしている
+    /// </summary>
+    /// <param name="direction"></param>
+    /// <returns></returns>
+    private bool IsLimitDash(Vector2 direction)
+    {
+        float angle = Vector2.Angle(Vector2.up, direction);
+
+        if (angle <= maxDashAngle)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

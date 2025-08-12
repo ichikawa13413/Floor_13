@@ -2664,6 +2664,7 @@ MonoBehaviour:
   minusRate: 15
   plusRate: 12
   dashSpeed: 300
+  maxDashAngle: 60
   jumpForce: 4.5
   groundLayer:
     serializedVersion: 2
