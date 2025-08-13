@@ -5,7 +5,17 @@ public class Slot : MonoBehaviour
 {
     private Item item;
 
-    [SerializeField] private Image image;
+    [SerializeField] private Image itemImage;
 
-    public Item MyItem { get => item; set => item = value; }
+    public Item MyItem { get => item; private set => item = value; }
+
+    public void SetItem(Item item)
+    {
+        MyItem = item;
+
+        if (MyItem != null)
+        {
+            itemImage.sprite = item.MyItemImage;
+        }
+    }
 }
