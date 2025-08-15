@@ -1109,7 +1109,9 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects:
   - {fileID: 1858727256}
+  - {fileID: 1692468127073056738}
   _player: {fileID: 5392821631121995557}
+  _slotGrid: {fileID: 8471292853955144246}
 --- !u!4 &1846048208
 Transform:
   m_ObjectHideFlags: 0
@@ -3486,11 +3488,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotPrefab: {fileID: 5749101377916124427, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
-  slotNumber: 16
+  maxSlot: 16
   allItems:
   - {fileID: 11400000, guid: 9f197b832318d5b44ab72edbaac939f8, type: 2}
   - {fileID: 11400000, guid: 872926d3eabfb2a4ea145d063541f955, type: 2}
   - {fileID: 11400000, guid: a1d5c3cbe18ad9d45b07968ff1011173, type: 2}
+  input: {fileID: 997518067}
 --- !u!1 &8536097543930924409
 GameObject:
   m_ObjectHideFlags: 0

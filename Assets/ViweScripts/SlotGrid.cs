@@ -1,12 +1,17 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SlotGrid : MonoBehaviour
 {
+    private Transform _transform;
+
+    //--Slotの生成--
     [SerializeField] private GameObject slotPrefab;
     [SerializeField] private int maxSlot;//グリット上に表示させる最大スロット数
-
-    private Transform _transform;
     [SerializeField] private Item[] allItems;
+
+    //--UI操作系--
+
 
     private void Awake()
     {
@@ -32,10 +37,5 @@ public class SlotGrid : MonoBehaviour
         }
 
         gameObject.SetActive(false);
-    }
-
-    public void OnSlotGrid()
-    {
-        gameObject.SetActive(!gameObject.activeSelf);
     }
 }    

@@ -47,6 +47,7 @@ public class Player : MonoBehaviour
 
     //--インベントリ関連--
     private SlotGrid _slotGrid;
+    private bool isOpenInventory;
 
     [Inject]
     public void Construct(SlotGrid slotGrid)
@@ -61,16 +62,25 @@ public class Player : MonoBehaviour
         _animator = GetComponent<Animator>();
         OnChange = false;
         maxStamina = 100;
+        stamina = maxStamina;
     }
 
     private void Start()
     {
-        
+        //マウスカーソルを中央に固定し（1行目）、消す（2行目）
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        isOpenInventory = false;
     }
 
     private void FixedUpdate()
     {
-        MoveInput();
+        //inventory使用中は操作不可
+        if (!isOpenInventory)
+        {
+            MoveInput();
+        }
     }
 
     private void Update()
@@ -78,19 +88,27 @@ public class Player : MonoBehaviour
         //地面判定を行う
         isGround = Physics.CheckSphere(_transform.position, 0.1f, groundLayer);
 
-        LookInput();
-        DashFunction();
+        //inventory使用中は操作不可
+        if (!isOpenInventory)
+        {
+            LookInput();
+            DashFunction();
+            _animator.SetBool(isRunHash, isDashing);
+            _animator.SetBool(isGroundHash, isGround);
+        }
         
-        _animator.SetBool(isRunHash, isDashing);
-        _animator.SetBool(isGroundHash, isGround);
+
     }
 
     private void OnEnable()
     {
         if(input == null) return;
         //移動系
-        input.actions["Move"].performed += ChangeDirection;
-        input.actions["Move"].canceled += ChangeDirection;
+        if (!isOpenInventory)
+        {
+            input.actions["Move"].performed += ChangeDirection;
+            input.actions["Move"].canceled += ChangeDirection;
+        }
         input.actions["Jump"].performed += OnJump;
         input.actions["Dash"].performed += OnDashStart;
         input.actions["Dash"].canceled += OnDashEnd;
@@ -108,8 +126,12 @@ public class Player : MonoBehaviour
     {
         if (input == null) return;
         //移動系
-        input.actions["Move"].performed -= ChangeDirection;
-        input.actions["Move"].canceled -= ChangeDirection;
+        if (!isOpenInventory)
+        {
+            input.actions["Move"].performed -= ChangeDirection;
+            input.actions["Move"].canceled -= ChangeDirection;
+        }
+
         input.actions["Jump"].performed -= OnJump;
         input.actions["Dash"].performed -= OnDashStart;
         input.actions["Dash"].canceled -= OnDashEnd;
@@ -254,6 +276,31 @@ public class Player : MonoBehaviour
 
     private void OnInventory(InputAction.CallbackContext context)
     {
-        _slotGrid.OnSlotGrid();
+        if (_slotGrid.gameObject.activeSelf)
+        {
+            CloseSlotGrid();
+        }
+        else
+        {
+            OpenSlotGrid();
+        }
+    }
+
+    public void OpenSlotGrid()
+    {
+        _slotGrid.gameObject.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        isOpenInventory = true;
+        _animator.speed = 0f;
+    }
+
+    public void CloseSlotGrid()
+    {
+        _slotGrid.gameObject.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        isOpenInventory = false;
+        _animator.speed = 1f;
     }
 }
