@@ -17,5 +17,9 @@ public class Slot : MonoBehaviour
         {
             itemImage.sprite = item.MyItemImage;
         }
+        else
+        {
+            itemImage.color = new Color(0, 0, 0, 0);
+        }
     }
 }

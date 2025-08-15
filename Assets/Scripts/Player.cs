@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 public class Player : MonoBehaviour
 {
@@ -44,6 +45,15 @@ public class Player : MonoBehaviour
     private static readonly int jumpHash = Animator.StringToHash("Jump");
     private static readonly int isGroundHash = Animator.StringToHash("isGround");
 
+    //--インベントリ関連--
+    private SlotGrid _slotGrid;
+
+    [Inject]
+    public void Construct(SlotGrid slotGrid)
+    {
+        _slotGrid = slotGrid;
+    }
+
     private void Awake()
     {
         _transform = transform;
@@ -78,27 +88,39 @@ public class Player : MonoBehaviour
     private void OnEnable()
     {
         if(input == null) return;
+        //移動系
         input.actions["Move"].performed += ChangeDirection;
         input.actions["Move"].canceled += ChangeDirection;
         input.actions["Jump"].performed += OnJump;
-        input.actions["Look"].performed += OnLook;
-        input.actions["Look"].canceled += OnLook;
         input.actions["Dash"].performed += OnDashStart;
         input.actions["Dash"].canceled += OnDashEnd;
+
+        //視点系
+        input.actions["Look"].performed += OnLook;
+        input.actions["Look"].canceled += OnLook;
         input.actions["ChangeViwe"].performed += OnChangeViwe;
+
+        //インベントリ系
+        input.actions["Inventory"].started += OnInventory;
     }
 
     private void OnDisable()
     {
         if (input == null) return;
+        //移動系
         input.actions["Move"].performed -= ChangeDirection;
         input.actions["Move"].canceled -= ChangeDirection;
         input.actions["Jump"].performed -= OnJump;
-        input.actions["Look"].performed -= OnLook;
-        input.actions["Look"].canceled -= OnLook;
         input.actions["Dash"].performed -= OnDashStart;
         input.actions["Dash"].canceled -= OnDashEnd;
+
+        //視点系
+        input.actions["Look"].performed -= OnLook;
+        input.actions["Look"].canceled -= OnLook;
         input.actions["ChangeViwe"].performed -= OnChangeViwe;
+
+        //インベントリ系
+        input.actions["Inventory"].started -= OnInventory;
     }
 
     private void MoveInput()
@@ -213,10 +235,10 @@ public class Player : MonoBehaviour
     }
 
     /// <summary>
-    /// ダッシュできる入力範囲を制限
+    /// ダッシュできる入力方向を制限
     /// trueだったらダッシュ条件を満たしている
     /// </summary>
-    /// <param name="direction"></param>
+    /// <param name="direction">プレイヤー入力した方向</param>
     /// <returns></returns>
     private bool IsLimitDash(Vector2 direction)
     {
@@ -228,5 +250,10 @@ public class Player : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void OnInventory(InputAction.CallbackContext context)
+    {
+        _slotGrid.OnSlotGrid();
     }
 }

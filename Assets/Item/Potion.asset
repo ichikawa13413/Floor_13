@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Potion
   m_EditorClassIdentifier: 
   itemName: "\u30DD\u30FC\u30B7\u30E7\u30F3"
-  itemImage: {fileID: 0}
+  itemImage: {fileID: 21300000, guid: 279a7f16bcc31014ea2d1e135f042805, type: 3}
