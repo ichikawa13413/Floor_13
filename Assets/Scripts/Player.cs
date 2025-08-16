@@ -96,19 +96,14 @@ public class Player : MonoBehaviour
             _animator.SetBool(isRunHash, isDashing);
             _animator.SetBool(isGroundHash, isGround);
         }
-        
-
     }
 
     private void OnEnable()
     {
         if(input == null) return;
         //移動系
-        if (!isOpenInventory)
-        {
-            input.actions["Move"].performed += ChangeDirection;
-            input.actions["Move"].canceled += ChangeDirection;
-        }
+        input.actions["Move"].performed += ChangeDirection;
+        input.actions["Move"].canceled += ChangeDirection;
         input.actions["Jump"].performed += OnJump;
         input.actions["Dash"].performed += OnDashStart;
         input.actions["Dash"].canceled += OnDashEnd;
@@ -126,12 +121,8 @@ public class Player : MonoBehaviour
     {
         if (input == null) return;
         //移動系
-        if (!isOpenInventory)
-        {
-            input.actions["Move"].performed -= ChangeDirection;
-            input.actions["Move"].canceled -= ChangeDirection;
-        }
-
+        input.actions["Move"].performed -= ChangeDirection;
+        input.actions["Move"].canceled -= ChangeDirection;
         input.actions["Jump"].performed -= OnJump;
         input.actions["Dash"].performed -= OnDashStart;
         input.actions["Dash"].canceled -= OnDashEnd;
@@ -144,16 +135,13 @@ public class Player : MonoBehaviour
         //インベントリ系
         input.actions["Inventory"].started -= OnInventory;
     }
-
+    
+    //プレイヤーの移動処理
     private void MoveInput()
     {
-        //入力方向をローカル座標に変換
         Vector3 movement = new Vector3(direction.x, 0, direction.y);
-
-        //キャラクターの向きを考慮して計算
         Vector3 moveDirection = (_transform.forward * movement.z + _transform.right * movement.x).normalized;
 
-        //ダッシュ中であったらdashSpeedを使う
         float getSpeed = isDashing ? dashSpeed : speed;
 
         moveDirection.x = moveDirection.x * getSpeed * Time.fixedDeltaTime;
@@ -163,6 +151,9 @@ public class Player : MonoBehaviour
 
     private void ChangeDirection(InputAction.CallbackContext context)
     {
+        //インベントリを表示中は入力を受け付けない
+        if(isOpenInventory) return;
+
         var vector2 = context.ReadValue<Vector2>();
         direction = vector2;
 
@@ -176,7 +167,7 @@ public class Player : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (isGround)
+        if (isGround && !isOpenInventory)
         {
             rb.AddForce(Vector3.up * jumpForce,ForceMode.Impulse);
             _animator.SetTrigger(jumpHash);
@@ -286,21 +277,48 @@ public class Player : MonoBehaviour
         }
     }
 
+    //インベントリ オープン時の処理
     public void OpenSlotGrid()
     {
         _slotGrid.gameObject.SetActive(true);
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
         isOpenInventory = true;
+
         _animator.speed = 0f;
+        _animator.SetFloat(SpeedHash, 0);
+
+        FreezePlayer();
+        direction = Vector2.zero;
     }
 
+    //インベントリ クローズ時の処理
     public void CloseSlotGrid()
     {
         _slotGrid.gameObject.SetActive(false);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
         isOpenInventory = false;
+
         _animator.speed = 1f;
+
+        UnFreezePlayer();
+    }
+
+    //プレイヤーの物理演算をすべて制限
+    private void FreezePlayer()
+    {
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+    }
+
+    //プレイヤーの物理演算をオフ
+    private void UnFreezePlayer()
+    {
+        rb.constraints = RigidbodyConstraints.None;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 }
