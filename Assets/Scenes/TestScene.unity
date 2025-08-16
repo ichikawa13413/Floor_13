@@ -895,7 +895,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -1110,8 +1110,11 @@ MonoBehaviour:
   autoInjectGameObjects:
   - {fileID: 1858727256}
   - {fileID: 1692468127073056738}
+  - {fileID: 8471292853955144245}
   _player: {fileID: 5392821631121995557}
   _slotGrid: {fileID: 8471292853955144246}
+  _slot: {fileID: 2280506819284741066, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+  _camera: {fileID: 330585545}
 --- !u!4 &1846048208
 Transform:
   m_ObjectHideFlags: 0
@@ -2205,8 +2208,8 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 90, y: 90}
-  m_Spacing: {x: 10, y: 10}
+  m_CellSize: {x: 100, y: 100}
+  m_Spacing: {x: 3, y: 3}
   m_Constraint: 1
   m_ConstraintCount: 4
 --- !u!4 &4180349266333032790
@@ -3487,13 +3490,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5fa958a3a3a2bd48a3f4c0b36680f03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotPrefab: {fileID: 5749101377916124427, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+  slotPrefab: {fileID: 136836633587978012, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
   maxSlot: 16
   allItems:
   - {fileID: 11400000, guid: 9f197b832318d5b44ab72edbaac939f8, type: 2}
   - {fileID: 11400000, guid: 872926d3eabfb2a4ea145d063541f955, type: 2}
   - {fileID: 11400000, guid: a1d5c3cbe18ad9d45b07968ff1011173, type: 2}
-  input: {fileID: 997518067}
 --- !u!1 &8536097543930924409
 GameObject:
   m_ObjectHideFlags: 0

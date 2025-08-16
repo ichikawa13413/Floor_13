@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
+using VContainer.Unity;
 
 public class SlotGrid : MonoBehaviour
 {
     private Transform _transform;
+    private IObjectResolver _container;
 
     //--SlotÇÃê∂ê¨--
     [SerializeField] private GameObject slotPrefab;
@@ -12,6 +15,12 @@ public class SlotGrid : MonoBehaviour
 
     //--UIëÄçÏån--
 
+
+    [Inject]
+    public void Construct(IObjectResolver container)
+    {
+        _container = container;
+    }
 
     private void Awake()
     {
@@ -22,7 +31,7 @@ public class SlotGrid : MonoBehaviour
     {
         for (int i = 0; i < maxSlot; i++)
         {
-            GameObject slotObj = Instantiate(slotPrefab, _transform);
+            GameObject slotObj = _container.Instantiate(slotPrefab, _transform);
 
             Slot slot = slotObj.GetComponent<Slot>();
 

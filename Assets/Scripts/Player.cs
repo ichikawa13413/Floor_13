@@ -1,3 +1,4 @@
+using R3;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
@@ -47,12 +48,16 @@ public class Player : MonoBehaviour
 
     //--インベントリ関連--
     private SlotGrid _slotGrid;
+    private Slot _slot;
     private bool isOpenInventory;
+    private Subject<Unit> subjectUnit;
+    public Observable<Unit> observableUnit => subjectUnit;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid)
+    public void Construct(SlotGrid slotGrid, Slot slot)
     {
         _slotGrid = slotGrid;
+        _slot = slot;
     }
 
     private void Awake()
@@ -63,6 +68,7 @@ public class Player : MonoBehaviour
         OnChange = false;
         maxStamina = 100;
         stamina = maxStamina;
+        subjectUnit = new Subject<Unit>();
     }
 
     private void Start()
@@ -307,6 +313,9 @@ public class Player : MonoBehaviour
         _animator.speed = 1f;
 
         UnFreezePlayer();
+
+        //インベントリを閉じた事を通知
+        subjectUnit.OnNext(Unit.Default);
     }
 
     //プレイヤーの物理演算をすべて制限

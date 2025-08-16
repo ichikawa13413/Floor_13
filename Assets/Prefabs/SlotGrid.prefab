@@ -32,7 +32,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7329910165721145773}
+  - {fileID: 1082147096906520617}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
@@ -124,6 +124,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7416198827766867007}
     m_Modifications:
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5749101377916124427, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
       propertyPath: m_Name
       value: Slod
@@ -213,8 +237,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
---- !u!224 &7329910165721145773 stripped
+--- !u!224 &1082147096906520617 stripped
 RectTransform:
-  m_CorrespondingSourceObject: {fileID: 8070388511586280879, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
+  m_CorrespondingSourceObject: {fileID: 378965302924172331, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
   m_PrefabInstance: {fileID: 740514357521875970}
   m_PrefabAsset: {fileID: 0}
