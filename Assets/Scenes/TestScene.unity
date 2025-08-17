@@ -1115,6 +1115,7 @@ MonoBehaviour:
   _slotGrid: {fileID: 8471292853955144246}
   _slot: {fileID: 2280506819284741066, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
   _camera: {fileID: 330585545}
+  _canvas: {fileID: 1432380852}
 --- !u!4 &1846048208
 Transform:
   m_ObjectHideFlags: 0
@@ -3496,6 +3497,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9f197b832318d5b44ab72edbaac939f8, type: 2}
   - {fileID: 11400000, guid: 872926d3eabfb2a4ea145d063541f955, type: 2}
   - {fileID: 11400000, guid: a1d5c3cbe18ad9d45b07968ff1011173, type: 2}
+  dropButtonPrefab: {fileID: 2868719138304615902, guid: 211987879e8393e4bb32d7c212ed94c7, type: 3}
+  useButtonPrefab: {fileID: 5538086208039452627, guid: a2ac9a0c20038f44eb8dc7254e307a7a, type: 3}
+  dropButtonOffset: {x: 100, y: 20, z: 0}
+  useButtonOffset: {x: 100, y: -20, z: 0}
 --- !u!1 &8536097543930924409
 GameObject:
   m_ObjectHideFlags: 0

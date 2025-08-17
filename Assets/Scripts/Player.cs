@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
     public void Construct(SlotGrid slotGrid, Slot slot)
     {
         _slotGrid = slotGrid;
-        _slot = slot;
+        //_slot = slot;
     }
 
     private void Awake()

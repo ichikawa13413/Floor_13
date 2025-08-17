@@ -92,8 +92,8 @@ MonoBehaviour:
   itemImage: {fileID: 4110384217427048091}
   dropButton: {fileID: 2868719138304615902, guid: 211987879e8393e4bb32d7c212ed94c7, type: 3}
   useButton: {fileID: 5538086208039452627, guid: a2ac9a0c20038f44eb8dc7254e307a7a, type: 3}
-  dropButtonPosition: {x: 10, y: 0, z: 0}
-  useButtonPosition: {x: 10, y: -10, z: 0}
+  dropButtonPosition: {x: 100, y: 20, z: 0}
+  useButtonPosition: {x: 100, y: -20, z: 0}
 --- !u!1 &348907858091777610
 GameObject:
   m_ObjectHideFlags: 0
