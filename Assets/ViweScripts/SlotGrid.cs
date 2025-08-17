@@ -85,11 +85,17 @@ public class SlotGrid : MonoBehaviour
     }
 
     /// <summary>
-    /// 押されたスロットの横にボタン設置
+    /// 押されたスロット情報に基づいて、ボタンのクリック処理とボタンの位置を設定。
     /// </summary>
-    /// <param name="slot">押されたスロット</param>
+    /// <param name="slot">クリックされたスロット</param>
     private void SetButton(Slot slot)
     {
+        dropButton.onClick.RemoveAllListeners();
+        dropButton.onClick.RemoveAllListeners();
+
+        dropButton.onClick.AddListener(() => slot.DropItem());
+        useButton.onClick.AddListener(() => slot.UseItem());
+
         RectTransform dropButtonRect = dropButton.GetComponent<RectTransform>();
         RectTransform useButtonRect = useButton.GetComponent<RectTransform>();
 
