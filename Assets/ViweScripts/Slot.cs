@@ -67,12 +67,12 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
     }
 
-    private void ShowHighLight()
+    public void ShowHighLight()
     {
         highLight.enabled = true;
     }
 
-    private void HideHighLight()
+    public void HideHighLight()
     {
         highLight.enabled = false;
     }

@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 
     //--ˆÚ“®ŠÖŒW--
     [SerializeField] private PlayerInput input;
+    public PlayerInput MyInput { get => input; private set => input = value; }
     [SerializeField] private float speed;
     private Vector2 direction;
 

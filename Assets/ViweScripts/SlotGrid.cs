@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using VContainer;
 using VContainer.Unity;
 using R3;
+using System.Collections.Generic;
+using System.Linq;
 
 public class SlotGrid : MonoBehaviour
 {
@@ -25,7 +27,14 @@ public class SlotGrid : MonoBehaviour
     private Canvas _canvas;
     public Subject<Slot> slotSubject;
     private Player _player;
-    
+
+    //--Slotをコントローラーで操作するための物--
+    private List<Slot> slots;
+    private GridLayoutGroup _gridLayoutGroup;
+    private int constraint;
+    private int currentSlectIndex;
+    private Slot currentSelectSlot;
+    private PlayerInput playerInput;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -39,10 +48,14 @@ public class SlotGrid : MonoBehaviour
     {
         _transform = transform;
         slotSubject = new Subject<Slot>();
+        _gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        currentSlectIndex = 0;
     }
 
     private void Start()
     {
+        playerInput = _player.MyInput;
+
         CreateSlot();
         CreateButton();
 
@@ -51,6 +64,10 @@ public class SlotGrid : MonoBehaviour
 
         //プレイヤーがインベントリを閉じたらボタンを非表示
         _player.observableUnit.Subscribe(_ => HideButton());
+
+        slots = GetComponentsInChildren<Slot>().ToList();
+
+        CheckConstraint();
     }
 
     //スロットをmaxSlot分生成
@@ -113,5 +130,61 @@ public class SlotGrid : MonoBehaviour
     {
         dropButton.gameObject.SetActive(false);
         useButton.gameObject.SetActive(false);
+    }
+
+    private void OnEnable()
+    {
+        playerInput.actions["ChoiceUp"].started += OnChoiceUp;
+        playerInput.actions["ChoiceDown"].started += OnChoiceDown;
+        playerInput.actions["ChoiceLeft"].started += OnChoiceLeft;
+        playerInput.actions["ChoiceRight"].started += OnChoiceRight;
+    }
+
+    private void OnDisable()
+    {
+        playerInput.actions["ChoiceUp"].started -= OnChoiceUp;
+        playerInput.actions["ChoiceDown"].started -= OnChoiceDown;
+        playerInput.actions["ChoiceLeft"].started -= OnChoiceLeft;
+        playerInput.actions["ChoiceRight"].started -= OnChoiceRight;
+    }
+
+    private void OnChoiceUp(InputAction.CallbackContext context)
+    {
+        SelectSlot(1);
+    }
+    private void OnChoiceDown(InputAction.CallbackContext context)
+    {
+        SelectSlot(2);
+    }
+    private void OnChoiceLeft(InputAction.CallbackContext context)
+    {
+        SelectSlot(3);
+    }
+    private void OnChoiceRight(InputAction.CallbackContext context)
+    {
+        SelectSlot(4);
+    }
+
+    private void SelectSlot(int index)
+    {
+        foreach(Slot slot in slots)
+        {
+            slot.HideHighLight();
+        }
+        slots[index].ShowHighLight();
+    }
+
+    private void CheckConstraint()
+    {
+        if (_gridLayoutGroup.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
+        {
+            constraint = _gridLayoutGroup.constraintCount;
+        }
+        else
+        {
+            Debug.LogError("GridLayoutGroupのConstraintはFixed Column Countに設定してください。");
+            //とりあえず値を設定しておく
+            constraint = 4;
+        }
     }
 }    
