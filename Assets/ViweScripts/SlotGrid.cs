@@ -34,7 +34,7 @@ public class SlotGrid : MonoBehaviour
     private int constraint;
     private int currentSlectIndex;
     private Slot currentSelectSlot;
-    private PlayerInput playerInput;
+    [SerializeField] private PlayerInput playerInput;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -54,8 +54,6 @@ public class SlotGrid : MonoBehaviour
 
     private void Start()
     {
-        playerInput = _player.MyInput;
-
         CreateSlot();
         CreateButton();
 
@@ -66,7 +64,7 @@ public class SlotGrid : MonoBehaviour
         _player.observableUnit.Subscribe(_ => HideButton());
 
         slots = GetComponentsInChildren<Slot>().ToList();
-
+        Debug.Log(slots.Count);
         CheckConstraint();
     }
 
@@ -138,6 +136,12 @@ public class SlotGrid : MonoBehaviour
         playerInput.actions["ChoiceDown"].started += OnChoiceDown;
         playerInput.actions["ChoiceLeft"].started += OnChoiceLeft;
         playerInput.actions["ChoiceRight"].started += OnChoiceRight;
+        //最初のスロットを選択状態にしておく
+        if (slots != null && slots.Count > 0)
+        {
+            //SelectSlot(0);
+            currentSlectIndex = 0;
+        }
     }
 
     private void OnDisable()
@@ -148,21 +152,57 @@ public class SlotGrid : MonoBehaviour
         playerInput.actions["ChoiceRight"].started -= OnChoiceRight;
     }
 
-    private void OnChoiceUp(InputAction.CallbackContext context)
+    public void OnChoiceUp(InputAction.CallbackContext context)
     {
-        SelectSlot(1);
+        int index = currentSlectIndex;
+
+        currentSlectIndex -= constraint;
+
+        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count -1);
+        if(index != currentSlectIndex)
+        {
+            SelectSlot(currentSlectIndex);
+        }
+        Debug.Log("Up" + currentSlectIndex);
     }
-    private void OnChoiceDown(InputAction.CallbackContext context)
+    public void OnChoiceDown(InputAction.CallbackContext context)
     {
-        SelectSlot(2);
+        int index = currentSlectIndex;
+
+        currentSlectIndex += constraint;
+
+        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
+        if (index != currentSlectIndex)
+        {
+            SelectSlot(currentSlectIndex);
+        }
+        Debug.Log("Down" + currentSlectIndex);
     }
-    private void OnChoiceLeft(InputAction.CallbackContext context)
+    public void OnChoiceLeft(InputAction.CallbackContext context)
     {
-        SelectSlot(3);
+        int index = currentSlectIndex;
+
+        currentSlectIndex--;
+
+        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
+        if (index != currentSlectIndex)
+        {
+            SelectSlot(currentSlectIndex);
+        }
+        Debug.Log("left" + currentSlectIndex);
     }
-    private void OnChoiceRight(InputAction.CallbackContext context)
+    public void OnChoiceRight(InputAction.CallbackContext context)
     {
-        SelectSlot(4);
+        int index = currentSlectIndex;
+
+        currentSlectIndex++;
+
+        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
+        if (index != currentSlectIndex)
+        {
+            SelectSlot(currentSlectIndex);
+        }
+        Debug.Log("Right" + currentSlectIndex);
     }
 
     private void SelectSlot(int index)
@@ -186,5 +226,28 @@ public class SlotGrid : MonoBehaviour
             //とりあえず値を設定しておく
             constraint = 4;
         }
+    }
+
+    public void OnNavigate(InputAction.CallbackContext context)
+    {
+        switch (context.control.path)
+        {
+            case "dpad/up":
+                SelectSlot(1);
+                break;
+            case "dpad/down":
+                SelectSlot(2);
+                break;
+            case "dpad/left":
+                SelectSlot(3);
+                break;
+            case "dpad/right":
+                SelectSlot(4);
+                break;
+            default:
+                Debug.Log("実行されていません");
+                break;
+        }
+        Debug.Log(context.control.path);
     }
 }    
