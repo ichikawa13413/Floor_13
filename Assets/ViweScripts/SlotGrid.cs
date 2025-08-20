@@ -152,6 +152,9 @@ public class SlotGrid : MonoBehaviour
 
     public void OnChoiceUp(InputAction.CallbackContext context)
     {
+        //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
+        ResetIndex(isOpenKeyboard);
+
         int index = currentSlectIndex;
 
         //一番上の段のスロットだったら移動させない
@@ -172,6 +175,9 @@ public class SlotGrid : MonoBehaviour
 
     public void OnChoiceDown(InputAction.CallbackContext context)
     {
+        //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
+        ResetIndex(isOpenKeyboard);
+
         int index = currentSlectIndex;
 
         //スロットの一番下の段の移動制限用
@@ -194,6 +200,9 @@ public class SlotGrid : MonoBehaviour
     }
     public void OnChoiceLeft(InputAction.CallbackContext context)
     {
+        //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
+        ResetIndex(isOpenKeyboard);
+
         int index = currentSlectIndex;
         index--;
 
@@ -208,6 +217,9 @@ public class SlotGrid : MonoBehaviour
     }
     public void OnChoiceRight(InputAction.CallbackContext context)
     {
+        //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
+        ResetIndex(isOpenKeyboard);
+
         int index = currentSlectIndex;
         index++;
 
@@ -243,5 +255,15 @@ public class SlotGrid : MonoBehaviour
             //とりあえず値を設定しておく
             constraint = 4;
         }
+    }
+
+    private void ResetIndex(bool onKeyboard)
+    {
+        if (onKeyboard)
+        {
+            SelectSlot(0);
+            currentSlectIndex = 0;
+        }
+        isOpenKeyboard = false;
     }
 }    
