@@ -13,6 +13,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     private Item item;
     private Image highLight;
     public Item MyItem { get => item; private set => item = value; }
+    private Subject<Unit> keyboardSubject;
+    public Observable<Unit> keyboardObservable => keyboardSubject;
 
     //--VContainer関連--
     private Player _player;
@@ -35,7 +37,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     private void Start()
     {
         //プレイヤーがインベントリをクローズした時にハイライトを消す
-        _player.observableUnit.Subscribe(_ => HideHighLight());
+        _player.closeObservable.Subscribe(_ => HideHighLight());
     }
 
     public void OnPointerEnter(PointerEventData eventData)

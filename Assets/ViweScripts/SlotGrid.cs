@@ -34,6 +34,7 @@ public class SlotGrid : MonoBehaviour
     private int constraint;
     private int currentSlectIndex;
     private int slotsIndex;
+    private bool isOpenKeyboard;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -51,6 +52,7 @@ public class SlotGrid : MonoBehaviour
         slotSubject = new Subject<Slot>();
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
         currentSlectIndex = 0;
+        isOpenKeyboard = false;
     }
 
     private void Start()
@@ -62,7 +64,10 @@ public class SlotGrid : MonoBehaviour
         slotSubject.Subscribe(slot => SetButton(slot));
 
         //プレイヤーがインベントリを閉じたらボタンを非表示
-        _player.observableUnit.Subscribe(_ => HideButton());
+        _player.closeObservable.Subscribe(_ => HideButton());
+
+        //プレイヤーがキーボードで開いたらtrue
+        _player.keyboardObservable.Subscribe(_ => isOpenKeyboard = true);
 
         slots = GetComponentsInChildren<Slot>().ToList();
         slotsIndex = slots.Count - 1;
@@ -130,12 +135,15 @@ public class SlotGrid : MonoBehaviour
     {
         dropButton.gameObject.SetActive(false);
         useButton.gameObject.SetActive(false);
+
+        //ついでにインベントリをオフにしたらfalse
+        isOpenKeyboard = false;
     }
 
     private void OnEnable()
     {
         //最初のスロットを選択状態にしておく
-        if (slots != null && slots.Count > 0)
+        if (slots != null && slots.Count > 0 && !isOpenKeyboard)
         {
             SelectSlot(0);
             currentSlectIndex = 0;
@@ -161,6 +169,7 @@ public class SlotGrid : MonoBehaviour
             SelectSlot(currentSlectIndex);
         }
     }
+
     public void OnChoiceDown(InputAction.CallbackContext context)
     {
         int index = currentSlectIndex;

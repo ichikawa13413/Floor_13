@@ -51,8 +51,10 @@ public class Player : MonoBehaviour
     private SlotGrid _slotGrid;
     private Slot _slot;
     private bool isOpenInventory;
-    private Subject<Unit> subjectUnit;
-    public Observable<Unit> observableUnit => subjectUnit;
+    private Subject<Unit> closeSubject;//インベントリをクローズしたら通知
+    public Observable<Unit> closeObservable => closeSubject;
+    private Subject<Unit> keyboardSubject;//キーボードでインベントリを開いたら通知
+    public Observable<Unit> keyboardObservable => keyboardSubject;
 
     [Inject]
     public void Construct(SlotGrid slotGrid, Slot slot)
@@ -65,11 +67,15 @@ public class Player : MonoBehaviour
     {
         _transform = transform;
         rb = GetComponent<Rigidbody>();
+
         _animator = GetComponent<Animator>();
+
         OnChange = false;
         maxStamina = 100;
         stamina = maxStamina;
-        subjectUnit = new Subject<Unit>();
+
+        closeSubject = new Subject<Unit>();
+        keyboardSubject = new Subject<Unit>();
     }
 
     private void Start()
@@ -123,6 +129,7 @@ public class Player : MonoBehaviour
         //インベントリ系
         input.actions["Inventory"].started += OnInventory;
         
+        //--コントローラーでインベントリを操作系--
         input.actions["ChoiceUp"].started += _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started += _slotGrid.OnChoiceLeft;
@@ -146,7 +153,8 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started -= OnInventory;
-        
+
+        //--コントローラーでインベントリを操作系--
         input.actions["ChoiceUp"].started -= _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started -= _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started -= _slotGrid.OnChoiceLeft;
@@ -284,6 +292,14 @@ public class Player : MonoBehaviour
 
     private void OnInventory(InputAction.CallbackContext context)
     {
+        InputDevice device = context.control.device;
+
+        //キーボードで開いたら通知
+        if (device is Keyboard) 
+        {
+            keyboardSubject.OnNext(Unit.Default);
+        }
+
         if (_slotGrid.gameObject.activeSelf)
         {
             CloseSlotGrid();
@@ -326,7 +342,7 @@ public class Player : MonoBehaviour
         UnFreezePlayer();
 
         //インベントリを閉じた事を通知
-        subjectUnit.OnNext(Unit.Default);
+        closeSubject.OnNext(Unit.Default);
     }
 
     //プレイヤーの物理演算をすべて制限
