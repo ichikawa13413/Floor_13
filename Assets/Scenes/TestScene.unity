@@ -3500,7 +3500,6 @@ MonoBehaviour:
   useButtonPrefab: {fileID: 5538086208039452627, guid: a2ac9a0c20038f44eb8dc7254e307a7a, type: 3}
   dropButtonOffset: {x: 100, y: 20, z: 0}
   useButtonOffset: {x: 100, y: -20, z: 0}
-  playerInput: {fileID: 997518067}
 --- !u!1 &8536097543930924409
 GameObject:
   m_ObjectHideFlags: 0

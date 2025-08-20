@@ -33,8 +33,7 @@ public class SlotGrid : MonoBehaviour
     private GridLayoutGroup _gridLayoutGroup;
     private int constraint;
     private int currentSlectIndex;
-    private Slot currentSelectSlot;
-    [SerializeField] private PlayerInput playerInput;
+    private int slotsIndex;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -47,6 +46,8 @@ public class SlotGrid : MonoBehaviour
     private void Awake()
     {
         _transform = transform;
+
+        //--スロット系--
         slotSubject = new Subject<Slot>();
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
         currentSlectIndex = 0;
@@ -64,7 +65,8 @@ public class SlotGrid : MonoBehaviour
         _player.observableUnit.Subscribe(_ => HideButton());
 
         slots = GetComponentsInChildren<Slot>().ToList();
-        Debug.Log(slots.Count);
+        slotsIndex = slots.Count - 1;
+
         CheckConstraint();
     }
 
@@ -132,77 +134,82 @@ public class SlotGrid : MonoBehaviour
 
     private void OnEnable()
     {
-        playerInput.actions["ChoiceUp"].started += OnChoiceUp;
-        playerInput.actions["ChoiceDown"].started += OnChoiceDown;
-        playerInput.actions["ChoiceLeft"].started += OnChoiceLeft;
-        playerInput.actions["ChoiceRight"].started += OnChoiceRight;
         //最初のスロットを選択状態にしておく
         if (slots != null && slots.Count > 0)
         {
-            //SelectSlot(0);
+            SelectSlot(0);
             currentSlectIndex = 0;
         }
-    }
-
-    private void OnDisable()
-    {
-        playerInput.actions["ChoiceUp"].started -= OnChoiceUp;
-        playerInput.actions["ChoiceDown"].started -= OnChoiceDown;
-        playerInput.actions["ChoiceLeft"].started -= OnChoiceLeft;
-        playerInput.actions["ChoiceRight"].started -= OnChoiceRight;
     }
 
     public void OnChoiceUp(InputAction.CallbackContext context)
     {
         int index = currentSlectIndex;
 
-        currentSlectIndex -= constraint;
-
-        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count -1);
-        if(index != currentSlectIndex)
+        //一番上の段のスロットだったら移動させない
+        if (index >= constraint)
         {
+            index -= constraint;
+        }
+
+        //gridLayoutGroupの枠外から出ていないか確認
+        index = Mathf.Clamp(index, 0, slotsIndex);
+
+        if (index != currentSlectIndex)
+        {
+            currentSlectIndex = index;
             SelectSlot(currentSlectIndex);
         }
-        Debug.Log("Up" + currentSlectIndex);
     }
     public void OnChoiceDown(InputAction.CallbackContext context)
     {
         int index = currentSlectIndex;
 
-        currentSlectIndex += constraint;
+        //スロットの一番下の段の移動制限用
+        int underLimit = slotsIndex - constraint;
 
-        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
+        //一番下の段のスロットだったら移動させない
+        if (index <= underLimit)
+        {
+            index += constraint;
+        }
+
+        //gridLayoutGroupの枠外から出ていないか確認
+        index = Mathf.Clamp(index, 0, slots.Count - 1);
+
         if (index != currentSlectIndex)
         {
+            currentSlectIndex = index;
             SelectSlot(currentSlectIndex);
         }
-        Debug.Log("Down" + currentSlectIndex);
     }
     public void OnChoiceLeft(InputAction.CallbackContext context)
     {
         int index = currentSlectIndex;
+        index--;
 
-        currentSlectIndex--;
+        //gridLayoutGroupの枠外から出ていないか確認
+        index = Mathf.Clamp(index, 0, slots.Count - 1);
 
-        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
         if (index != currentSlectIndex)
         {
+            currentSlectIndex = index;
             SelectSlot(currentSlectIndex);
         }
-        Debug.Log("left" + currentSlectIndex);
     }
     public void OnChoiceRight(InputAction.CallbackContext context)
     {
         int index = currentSlectIndex;
+        index++;
 
-        currentSlectIndex++;
+        //gridLayoutGroupの枠外から出ていないか確認
+        index = Mathf.Clamp(index, 0, slots.Count - 1);
 
-        currentSlectIndex = Mathf.Clamp(currentSlectIndex, 0, slots.Count - 1);
         if (index != currentSlectIndex)
         {
+            currentSlectIndex = index;
             SelectSlot(currentSlectIndex);
         }
-        Debug.Log("Right" + currentSlectIndex);
     }
 
     private void SelectSlot(int index)
@@ -214,6 +221,7 @@ public class SlotGrid : MonoBehaviour
         slots[index].ShowHighLight();
     }
 
+    //gridLayoutGroupのConstraintがFixedColumnCountに設定されているか確認、その後constraintの値を代入
     private void CheckConstraint()
     {
         if (_gridLayoutGroup.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
@@ -226,28 +234,5 @@ public class SlotGrid : MonoBehaviour
             //とりあえず値を設定しておく
             constraint = 4;
         }
-    }
-
-    public void OnNavigate(InputAction.CallbackContext context)
-    {
-        switch (context.control.path)
-        {
-            case "dpad/up":
-                SelectSlot(1);
-                break;
-            case "dpad/down":
-                SelectSlot(2);
-                break;
-            case "dpad/left":
-                SelectSlot(3);
-                break;
-            case "dpad/right":
-                SelectSlot(4);
-                break;
-            default:
-                Debug.Log("実行されていません");
-                break;
-        }
-        Debug.Log(context.control.path);
     }
 }    

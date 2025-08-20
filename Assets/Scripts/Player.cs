@@ -122,11 +122,11 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started += OnInventory;
-        /*
+        
         input.actions["ChoiceUp"].started += _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started += _slotGrid.OnChoiceLeft;
-        input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;*/
+        input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;
     }
 
     private void OnDisable()
@@ -146,11 +146,11 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started -= OnInventory;
-        /*
+        
         input.actions["ChoiceUp"].started -= _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started -= _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started -= _slotGrid.OnChoiceLeft;
-        input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;*/
+        input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;
     }
     
     //プレイヤーの移動処理
