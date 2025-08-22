@@ -49,18 +49,20 @@ public class Player : MonoBehaviour
 
     //--インベントリ関連--
     private SlotGrid _slotGrid;
-    private Slot _slot;
     private bool isOpenInventory;
-    private Subject<Unit> closeSubject;//インベントリをクローズしたら通知
+
+    //インベントリをクローズしたら通知
+    private Subject<Unit> closeSubject;
     public Observable<Unit> closeObservable => closeSubject;
-    private Subject<Unit> keyboardSubject;//キーボードでインベントリを開いたら通知
+
+    //キーボードでインベントリを開いたら通知
+    private Subject<Unit> keyboardSubject;
     public Observable<Unit> keyboardObservable => keyboardSubject;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid, Slot slot)
+    public void Construct(SlotGrid slotGrid)
     {
         _slotGrid = slotGrid;
-        //_slot = slot;
     }
 
     private void Awake()
@@ -76,6 +78,7 @@ public class Player : MonoBehaviour
 
         closeSubject = new Subject<Unit>();
         keyboardSubject = new Subject<Unit>();
+
     }
 
     private void Start()
@@ -134,6 +137,8 @@ public class Player : MonoBehaviour
         input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started += _slotGrid.OnChoiceLeft;
         input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;
+        input.actions["DecisionButton"].started += _slotGrid.OnDecisionButton;
+        input.actions["QuitButton"].started += _slotGrid.OnQuitChoice;
     }
 
     private void OnDisable()
@@ -159,6 +164,8 @@ public class Player : MonoBehaviour
         input.actions["ChoiceDown"].started -= _slotGrid.OnChoiceDown;
         input.actions["ChoiceLeft"].started -= _slotGrid.OnChoiceLeft;
         input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;
+        input.actions["DecisionButton"].started -= _slotGrid.OnDecisionButton;
+        input.actions["QuitButton"].started -= _slotGrid.OnQuitChoice;
     }
     
     //プレイヤーの移動処理

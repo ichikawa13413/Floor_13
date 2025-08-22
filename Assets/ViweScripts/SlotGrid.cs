@@ -22,6 +22,9 @@ public class SlotGrid : MonoBehaviour
     [SerializeField] private Button useButtonPrefab;
     [SerializeField] private Vector3 dropButtonOffset;
     [SerializeField] private Vector3 useButtonOffset;
+    [SerializeField] private Vector3 ChoiceArrowOffset;
+    [SerializeField] private GameObject ChoiceArrowPrefab;
+    private GameObject ChoiceArrow;
     private Button dropButton;
     private Button useButton;
     private Canvas _canvas;
@@ -35,6 +38,15 @@ public class SlotGrid : MonoBehaviour
     private int currentSlectIndex;
     private int slotsIndex;
     private bool isOpenKeyboard;
+    private bool isLockChoice;
+    private Subject<Unit> decisionSubject;//コントローラーでスロットを選択した時に通知
+    private enum State//どのボタンを選択中か管理
+    {
+        dropState,
+        useState,
+        nullState
+    }
+    private State currentState;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -53,6 +65,9 @@ public class SlotGrid : MonoBehaviour
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
         currentSlectIndex = 0;
         isOpenKeyboard = false;
+        isLockChoice = false;
+        decisionSubject = new Subject<Unit>();
+        currentState = State.nullState;
     }
 
     private void Start()
@@ -73,6 +88,12 @@ public class SlotGrid : MonoBehaviour
         slotsIndex = slots.Count - 1;
 
         CheckConstraint();
+
+        decisionSubject.Subscribe(_ =>
+        {
+            isLockChoice = true;
+            currentState = State.useState;
+        });
     }
 
     //スロットをmaxSlot分生成
@@ -101,9 +122,11 @@ public class SlotGrid : MonoBehaviour
     {
         dropButton = Instantiate(dropButtonPrefab, _canvas.transform);
         useButton = Instantiate(useButtonPrefab, _canvas.transform);
+        ChoiceArrow = Instantiate(ChoiceArrowPrefab, _canvas.transform);
 
         dropButton.gameObject.SetActive(false);
         useButton.gameObject.SetActive(false);
+        ChoiceArrow.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -129,15 +152,20 @@ public class SlotGrid : MonoBehaviour
 
         dropButton.gameObject.SetActive(true);
         useButton.gameObject.SetActive(true);
+
+        SetChoiceArrow(useButton.transform.position);
     }
 
     private void HideButton()
     {
         dropButton.gameObject.SetActive(false);
         useButton.gameObject.SetActive(false);
+        ChoiceArrow.gameObject.SetActive(false);
 
-        //ついでにインベントリをオフにしたらfalse
+        //ついでにインベントリをオフにしたらboolをリセット
         isOpenKeyboard = false;
+        isLockChoice = false;
+        currentState = State.nullState;
     }
 
     private void OnEnable()
@@ -159,7 +187,19 @@ public class SlotGrid : MonoBehaviour
             return;
         }
 
-        int index = currentSlectIndex;
+        //ドロップボタン選択中に十字キー上を押されたらユーズボタンに移動する
+        if (currentState == State.dropState && isLockChoice)
+        {
+            SetChoiceArrow(useButton.transform.position);
+            currentState = State.useState;
+            return;
+        }
+        else if (currentState == State.useState)//ユーズボタン選択中に上を押されたら処理を終了
+        {
+            return;
+        }
+
+            int index = currentSlectIndex;
 
         //一番上の段のスロットだったら移動させない
         if (index >= constraint)
@@ -186,7 +226,19 @@ public class SlotGrid : MonoBehaviour
             return;
         }
 
-        int index = currentSlectIndex;
+        //ユーズボタン選択中に十字キー上を押されたらドロップボタンに移動する
+        if (currentState == State.useState && isLockChoice)
+        {
+            SetChoiceArrow(dropButton.transform.position);
+            currentState = State.dropState;
+            return;
+        }
+        else if (currentState == State.dropState)//ドロップボタン選択中に上を押されたら処理を終了
+        {
+            return;
+        }
+
+            int index = currentSlectIndex;
 
         //スロットの一番下の段の移動制限用
         int underLimit = slotsIndex - constraint;
@@ -209,6 +261,8 @@ public class SlotGrid : MonoBehaviour
 
     public void OnChoiceLeft(InputAction.CallbackContext context)
     {
+        if (isLockChoice) return;
+
         //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
         if (isOpenKeyboard)
         {
@@ -231,6 +285,8 @@ public class SlotGrid : MonoBehaviour
 
     public void OnChoiceRight(InputAction.CallbackContext context)
     {
+        if (isLockChoice) return;
+
         //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
         if (isOpenKeyboard)
         {
@@ -285,4 +341,27 @@ public class SlotGrid : MonoBehaviour
         isOpenKeyboard = false;
     }
 
+    public void OnDecisionButton(InputAction.CallbackContext context)
+    {
+        if (!this.gameObject.activeSelf) return;
+      
+        Slot currentSlot = slots[currentSlectIndex];
+
+        SetButton(currentSlot);
+
+        decisionSubject.OnNext(Unit.Default);
+    }
+
+    private void SetChoiceArrow(Vector3 ButtonPos)
+    {
+        ChoiceArrow.SetActive(true);
+        ChoiceArrow.transform.position = ButtonPos;
+        ChoiceArrow.transform.position += ChoiceArrowOffset;
+        currentState = State.useState;
+    }
+
+    public void OnQuitChoice(InputAction.CallbackContext context)
+    {
+        HideButton();
+    }
 }    

@@ -3498,8 +3498,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a1d5c3cbe18ad9d45b07968ff1011173, type: 2}
   dropButtonPrefab: {fileID: 2868719138304615902, guid: 211987879e8393e4bb32d7c212ed94c7, type: 3}
   useButtonPrefab: {fileID: 5538086208039452627, guid: a2ac9a0c20038f44eb8dc7254e307a7a, type: 3}
-  dropButtonOffset: {x: 100, y: 20, z: 0}
-  useButtonOffset: {x: 100, y: -20, z: 0}
+  dropButtonOffset: {x: 100, y: -20, z: 0}
+  useButtonOffset: {x: 100, y: 20, z: 0}
+  ChoiceArrowOffset: {x: 70, y: 0, z: 0}
+  ChoiceArrowPrefab: {fileID: 897751088312938715, guid: a3238b45fc99f9747a824f91c6b4e0ac, type: 3}
 --- !u!1 &8536097543930924409
 GameObject:
   m_ObjectHideFlags: 0
