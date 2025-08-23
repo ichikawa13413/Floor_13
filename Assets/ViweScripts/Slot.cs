@@ -52,7 +52,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        _slotGrid.slotSubject.OnNext(this);
+        _slotGrid.slotOnNext.OnNext(this);
     }
 
     public void SetItem(Item item)

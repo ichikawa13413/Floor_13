@@ -28,7 +28,9 @@ public class SlotGrid : MonoBehaviour
     private Button dropButton;
     private Button useButton;
     private Canvas _canvas;
-    public Subject<Slot> slotSubject;
+    private Subject<Slot> slotMouseClickSubject;
+    public ISubject<Slot> slotOnNext => slotMouseClickSubject;
+    private bool isMouseClick;
     private Player _player;
 
     //--Slotをコントローラーで操作するための物--
@@ -70,8 +72,9 @@ public class SlotGrid : MonoBehaviour
         _transform = transform;
 
         //--スロット系--
-        slotSubject = new Subject<Slot>();
+        slotMouseClickSubject = new Subject<Slot>();
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        isMouseClick = false;
 
         //--コントローラーでボタンを操作する系--
         currentSlectIndex = 0;
@@ -89,8 +92,12 @@ public class SlotGrid : MonoBehaviour
         CreateSlot();
         CreateButton();
 
-        //押されたスロットの情報を購読して、押されたスロットの横にボタン設置
-        slotSubject.Subscribe(slot => SetButton(slot));
+        //マウスでクリックされたスロットの情報を購読して、押されたスロットの横にボタン設置
+        slotMouseClickSubject.Subscribe(slot =>
+        {
+            isMouseClick = true;
+            SetButton(slot);
+        });
 
         //プレイヤーがインベントリを閉じたらボタンを非表示
         _player.closeObservable.Subscribe(_ => HideButton());
@@ -113,6 +120,7 @@ public class SlotGrid : MonoBehaviour
     private void Update()
     {
         Debug.Log(currentButtonState);
+        Debug.Log(currentSlectIndex);
     }
     private void OnEnable()
     {
@@ -200,7 +208,10 @@ public class SlotGrid : MonoBehaviour
         dropButton.gameObject.SetActive(true);
         useButton.gameObject.SetActive(true);
 
-        SetChoiceArrow(useButton.transform.position);
+        if (!isMouseClick)
+        {
+            SetChoiceArrow(useButton.transform.position);
+        }
     }
 
     private void HideButton()
@@ -212,6 +223,7 @@ public class SlotGrid : MonoBehaviour
         //ついでにインベントリをオフにしたらboolをリセット
         isOpenKeyboard = false;
         isLockChoice = false;
+        isMouseClick = false;
         currentArrowState = arrowState.nullArrowState;
         currentButtonState = buttonState.nullButtonState;
     }
@@ -280,7 +292,7 @@ public class SlotGrid : MonoBehaviour
             return;
         }
 
-            int index = currentSlectIndex;
+        int index = currentSlectIndex;
 
         //スロットの一番下の段の移動制限用
         int underLimit = slotsIndex - constraint;
@@ -404,6 +416,10 @@ public class SlotGrid : MonoBehaviour
         currentButtonState = buttonState.useDecisionState;
     }
 
+    /// <summary>
+    /// 選択中のボタンの右にアイコンを置く
+    /// </summary>
+    /// <param name="ButtonPos">選択中のボタンの座標</param>
     private void SetChoiceArrow(Vector3 ButtonPos)
     {
         ChoiceArrow.SetActive(true);
