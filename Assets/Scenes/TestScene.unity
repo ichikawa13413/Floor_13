@@ -1182,6 +1182,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94bf4db0732971749a87a3c29be67a0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backGround: {fileID: 332579517}
+  fill: {fileID: 941996746}
+  handle: {fileID: 1553681455}
+  minusRate: 0.2
 --- !u!114 &1858727259
 MonoBehaviour:
   m_ObjectHideFlags: 0
