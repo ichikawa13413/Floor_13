@@ -63,6 +63,9 @@ public class Player : MonoBehaviour
     private Subject<Unit> keyboardSubject;
     public Observable<Unit> keyboardObservable => keyboardSubject;
 
+    //--アイテムを拾う系--
+    [SerializeField] private LayerMask itemLayer;
+
     [Inject]
     public void Construct(SlotGrid slotGrid)
     {
@@ -127,6 +130,8 @@ public class Player : MonoBehaviour
         {
             consumeSubject.OnNext(Unit.Default);
         }
+
+        PickUpItem();
     }
 
     private void OnEnable()
@@ -378,5 +383,19 @@ public class Player : MonoBehaviour
     {
         rb.constraints = RigidbodyConstraints.None;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+    }
+
+    private void PickUpItem()
+    {
+        if (currentCamera == null) return;
+
+        RaycastHit hit;
+        if (Physics.Raycast(currentCamera.ViewportPointToRay(new Vector2(0.5f, 0.5f)),out hit,10f))
+        {
+            if (hit.collider.CompareTag("Item"))
+            {
+                Debug.Log("アイテムだよ");
+            }
+        }
     }
 }
