@@ -20,6 +20,10 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     private Player _player;
     private SlotGrid _slotGrid;
 
+    //--アイテムドロップ関連--
+    [SerializeField] private int yOffset;
+    [SerializeField] private int zOffset;
+
     [Inject]
     public void Construct(Player player,SlotGrid slotGrid)
     {
@@ -65,7 +69,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
         else
         {
-            itemImage.color = new Color(0, 0, 0, 0);
+            itemImage.color = Color.clear;
         }
     }
 
@@ -81,10 +85,21 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public void DropItem()
     {
+        //プレイヤーの前に該当するアイテムを生成
         if (MyItem != null)
         {
+            Vector3 playerPos = _player.transform.position;
+            Vector3 PlayerForward = _player.transform.forward;
+            Vector3 spawnPos = playerPos + (PlayerForward * zOffset) + (Vector3.up * yOffset);
+            Quaternion playerRotation = _player.transform.rotation;
+            GameObject itemObject = Instantiate(MyItem.MyItemObject, spawnPos, playerRotation);
+
             MyItem = null;
-            itemImage.color = new Color(0,0,0,0);
+            itemImage.color = Color.clear;
+        }
+        else
+        {
+            Debug.Log("アイテムをドロップ出来ません");
         }
     }
 
@@ -93,7 +108,11 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         if (MyItem != null)
         {
             MyItem = null;
-            itemImage.color = new Color(0, 0, 0, 0);
+            itemImage.color = Color.clear;
+        }
+        else
+        {
+            Debug.Log("アイテムを使用出来ません");
         }
     }
 }
