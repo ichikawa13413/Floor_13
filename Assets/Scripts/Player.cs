@@ -21,10 +21,11 @@ public class Player : MonoBehaviour
     [SerializeField] private int maxDashAngle;
     public float maxStamina {  get; private set; }
     public float stamina {  get; private set; }
-    private bool isDashing;
-    //↑これをカプセル化してスタミナスライダーに共有
+    public bool isDashing { get; private set; }
     private Subject<Unit> maxStaminaSubject;//スタミナが満タンになったら通知
     public Observable<Unit> maxStaminaObservable => maxStaminaSubject;
+    private Subject<Unit> consumeSubject;//スタミナが消費されたら通知
+    public Observable<Unit> consumeObservable => consumeSubject;
 
     //--ジャンプ関係--
     [SerializeField] private float jumpForce;
@@ -82,6 +83,7 @@ public class Player : MonoBehaviour
         closeSubject = new Subject<Unit>();
         keyboardSubject = new Subject<Unit>();
         maxStaminaSubject = new Subject<Unit>();
+        consumeSubject = new Subject<Unit>();
     }
 
     private void Start()
@@ -116,10 +118,14 @@ public class Player : MonoBehaviour
             _animator.SetBool(isGroundHash, isGround);
         }
 
+        //スタミナの状態をStaminaSliderへ通知
         if (stamina == maxStamina)
         {
             maxStaminaSubject.OnNext(Unit.Default);
-            Debug.Log("通知オン");
+        }
+        else if(stamina != maxStamina)
+        {
+            consumeSubject.OnNext(Unit.Default);
         }
     }
 

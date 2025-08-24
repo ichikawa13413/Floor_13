@@ -10,6 +10,8 @@ public class StaminaSlider : MonoBehaviour
     [SerializeField] private Image handle;
     [SerializeField] private float minusRate;
     private Slider _slider;
+    private const int MAXIMUM_ALPHA = 1;
+    private const int MINIMUM_ALPHA = 0;
 
     private Player _player;
 
@@ -36,6 +38,7 @@ public class StaminaSlider : MonoBehaviour
         }
         
         _player.maxStaminaObservable.Subscribe(_ => HideStaminaSlider());
+        _player.consumeObservable.Subscribe(_ => ShowStaminaSlider());
     }
 
     private void Update()
@@ -54,7 +57,7 @@ public class StaminaSlider : MonoBehaviour
     //スタミナが満タンになったらスタミナスライダーゆっくりと消す
     private void HideStaminaSlider()
     {
-        if(fill.color.a > 0 || backGround.color.a > 0)
+        if(fill.color.a > MINIMUM_ALPHA || backGround.color.a > MINIMUM_ALPHA || handle.color.a > MINIMUM_ALPHA)
         {
             Color backGroundColor = fill.color;
             Color fillColor = backGround.color;
@@ -64,9 +67,28 @@ public class StaminaSlider : MonoBehaviour
             fillColor.a -= minusRate * Time.deltaTime;
             handleColor.a -= minusRate * Time.deltaTime;
 
-            backGroundColor.a = Mathf.Clamp(backGroundColor.a, 0, 1);
-            fillColor.a = Mathf.Clamp(fillColor.a, 0, 1);
-            handleColor.a = Mathf.Clamp(handleColor.a, 0, 1);
+            backGroundColor.a = Mathf.Clamp(backGroundColor.a, MINIMUM_ALPHA, MAXIMUM_ALPHA);
+            fillColor.a = Mathf.Clamp(fillColor.a, MINIMUM_ALPHA, MAXIMUM_ALPHA);
+            handleColor.a = Mathf.Clamp(handleColor.a, MINIMUM_ALPHA, MAXIMUM_ALPHA);
+
+            fill.color = backGroundColor;
+            backGround.color = fillColor;
+            handle.color = handleColor;
+        }
+    }
+
+    //スタミナ消費中はスライダーを表示する
+    private void ShowStaminaSlider()
+    {
+        if (fill.color.a < MAXIMUM_ALPHA || backGround.color.a < MAXIMUM_ALPHA || handle.color.a < MAXIMUM_ALPHA)
+        {
+            Color backGroundColor = fill.color;
+            Color fillColor = backGround.color;
+            Color handleColor = handle.color;
+
+            backGroundColor.a = MAXIMUM_ALPHA;
+            fillColor.a = MAXIMUM_ALPHA;
+            handleColor.a = MAXIMUM_ALPHA;
 
             fill.color = backGroundColor;
             backGround.color = fillColor;
