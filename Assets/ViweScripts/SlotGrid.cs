@@ -6,6 +6,8 @@ using VContainer.Unity;
 using R3;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditorInternal.Profiling.Memory.Experimental;
+using Cysharp.Threading.Tasks;
 
 public class SlotGrid : MonoBehaviour
 {
@@ -115,6 +117,10 @@ public class SlotGrid : MonoBehaviour
         {
             isLockChoice = true;
         });
+
+        //プレイヤーがアイテムを拾ったらセットアイテムをする
+        Slot current = slots[0];
+        _player.GetItemObservable.Subscribe(playerItem => current.SetItem(playerItem));
     }
 
     private void Update()
@@ -143,9 +149,9 @@ public class SlotGrid : MonoBehaviour
 
             Slot slot = slotObj.GetComponent<Slot>();
 
-            if (i < allItems.Length)
+            if (i < _player.gettedItem.Length)
             {
-                slot.SetItem(allItems[i]);
+                slot.SetItem(_player.gettedItem[i]);
             }
             else
             {
@@ -252,7 +258,7 @@ public class SlotGrid : MonoBehaviour
             return;
         }
 
-            int index = currentSlectIndex;
+        int index = currentSlectIndex;
 
         //一番上の段のスロットだったら移動させない
         if (index >= constraint)

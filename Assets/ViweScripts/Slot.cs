@@ -66,6 +66,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         if (MyItem != null)
         {
             itemImage.sprite = item.MyItemImage;
+            itemImage.color = Color.white;//何故かアップルだけorスロット0番だけ読み込まない？
         }
         else
         {

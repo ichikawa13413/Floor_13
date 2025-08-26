@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using R3;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -54,6 +55,8 @@ public class Player : MonoBehaviour
     //--インベントリ関連--
     private SlotGrid _slotGrid;
     private bool isOpenInventory;
+    public Item[] gettedItem { get; private set; }//プレイヤーが持っているアイテム
+    
 
     //インベントリをクローズしたら通知
     private Subject<Unit> closeSubject;
@@ -65,6 +68,8 @@ public class Player : MonoBehaviour
 
     //--アイテムを拾う系--
     [SerializeField] private LayerMask itemLayer;
+    private Subject<Item> getItemSubject;//プレイヤーがアイテムを拾ったら通知
+    public Observable<Item> GetItemObservable => getItemSubject;
 
     [Inject]
     public void Construct(SlotGrid slotGrid)
@@ -87,6 +92,8 @@ public class Player : MonoBehaviour
         keyboardSubject = new Subject<Unit>();
         maxStaminaSubject = new Subject<Unit>();
         consumeSubject = new Subject<Unit>();
+        getItemSubject = new Subject<Item>();
+        gettedItem = new Item[16];
     }
 
     private void Start()
@@ -394,7 +401,12 @@ public class Player : MonoBehaviour
         {
             if (hit.collider.CompareTag("Item"))
             {
-                Debug.Log("アイテムだよ");
+                ItemHolder holder = hit.collider.GetComponent<ItemHolder>();
+                Item getItem = holder.itemData;
+  
+                getItemSubject.OnNext(getItem);//何故かappleだけ取ってくれない
+                gettedItem[0] = getItem;
+                Destroy(hit.collider.gameObject);
             }
         }
     }
