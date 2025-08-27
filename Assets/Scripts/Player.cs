@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using R3;
 using UnityEngine;
@@ -55,8 +56,6 @@ public class Player : MonoBehaviour
     //--インベントリ関連--
     private SlotGrid _slotGrid;
     private bool isOpenInventory;
-    public Item[] gettedItem { get; private set; }//プレイヤーが持っているアイテム
-    
 
     //インベントリをクローズしたら通知
     private Subject<Unit> closeSubject;
@@ -68,6 +67,8 @@ public class Player : MonoBehaviour
 
     //--アイテムを拾う系--
     [SerializeField] private LayerMask itemLayer;
+    [SerializeField] private float maxDistance;
+    private static readonly Vector2 CAMERA_CENTER = new Vector2(0.5f, 0.5f);
     private Subject<Item> getItemSubject;//プレイヤーがアイテムを拾ったら通知
     public Observable<Item> GetItemObservable => getItemSubject;
 
@@ -93,7 +94,6 @@ public class Player : MonoBehaviour
         maxStaminaSubject = new Subject<Unit>();
         consumeSubject = new Subject<Unit>();
         getItemSubject = new Subject<Item>();
-        gettedItem = new Item[16];
     }
 
     private void Start()
@@ -397,16 +397,22 @@ public class Player : MonoBehaviour
         if (currentCamera == null) return;
 
         RaycastHit hit;
-        if (Physics.Raycast(currentCamera.ViewportPointToRay(new Vector2(0.5f, 0.5f)),out hit,10f))
+        if (Physics.Raycast(currentCamera.ViewportPointToRay(CAMERA_CENTER),out hit,maxDistance))
         {
             if (hit.collider.CompareTag("Item"))
             {
                 ItemHolder holder = hit.collider.GetComponent<ItemHolder>();
                 Item getItem = holder.itemData;
-  
-                getItemSubject.OnNext(getItem);//何故かappleだけ取ってくれない
-                gettedItem[0] = getItem;
-                Destroy(hit.collider.gameObject);
+
+                if (_slotGrid.canGetItem)
+                {
+                    _slotGrid.SetItem(getItem);
+                    Destroy(hit.collider.gameObject);
+                }
+                else
+                {
+                    Debug.Log("これ以上アイテムを拾えません");
+                }
             }
         }
     }

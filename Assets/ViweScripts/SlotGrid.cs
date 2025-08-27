@@ -17,7 +17,7 @@ public class SlotGrid : MonoBehaviour
     //--Slotの生成--
     [SerializeField] private GameObject slotPrefab;
     [SerializeField] private int maxSlot;//グリット上に表示させる最大スロット数
-    [SerializeField] private Item[] allItems;
+    [SerializeField] private Item[] gettedItems;
 
     //--ボタン系--
     [SerializeField] private Button dropButtonPrefab;
@@ -61,6 +61,10 @@ public class SlotGrid : MonoBehaviour
     }
     private buttonState currentButtonState;
 
+    //--アイテムを拾った時に使うもの--
+    public bool canGetItem {  get; private set; }
+    private const int FIRST_INDEX = 0;
+
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
     {
@@ -87,6 +91,8 @@ public class SlotGrid : MonoBehaviour
         decisionSubject = new Subject<Unit>();
         currentArrowState = arrowState.nullArrowState;
         currentButtonState = buttonState.nullButtonState;
+
+        canGetItem = true;
     }
 
     private void Start()
@@ -119,15 +125,25 @@ public class SlotGrid : MonoBehaviour
         });
 
         //プレイヤーがアイテムを拾ったらセットアイテムをする
-        Slot current = slots[0];
-        _player.GetItemObservable.Subscribe(playerItem => current.SetItem(playerItem));
+        //Slot current = slots[0];
+        //_player.GetItemObservable.Subscribe(playerItem => current.SetItem(playerItem));
     }
 
     private void Update()
     {
         Debug.Log(currentButtonState);
         Debug.Log(currentSlectIndex);
+        Debug.Log(canGetItem);
+        if (maxSlot == gettedItems.Length)
+        {
+            canGetItem = false;
+        }
+        else
+        {
+            canGetItem = true;
+        }
     }
+
     private void OnEnable()
     {
         //最初のスロットを選択状態にしておく
@@ -149,9 +165,9 @@ public class SlotGrid : MonoBehaviour
 
             Slot slot = slotObj.GetComponent<Slot>();
 
-            if (i < _player.gettedItem.Length)
+            if (i < gettedItems.Length)
             {
-                slot.SetItem(_player.gettedItem[i]);
+                slot.SetItem(gettedItems[i]);
             }
             else
             {
@@ -440,4 +456,24 @@ public class SlotGrid : MonoBehaviour
     }
 
     ///------------------------------
+
+    ///-----<アイテムを拾う処理など>-----
+    
+    public void SetItem(Item item)
+    {
+        if (item == null) return;
+
+        //slotsでMyItemがnullのインデックスをまとめたリストを作成
+        List<int> nullIndex = slots
+             .Select((slot, index) => new { Slot = slot, Index = index })
+             .Where(x => x.Slot.MyItem == null)
+             .Select(x => x.Index)
+             .OrderBy(x => x)
+             .ToList();
+
+        //左上から順にitemを入れていく
+        int currentIndex = nullIndex[FIRST_INDEX];
+        Slot currentSlot = slots[currentIndex];
+        currentSlot.SetItem(item);
+    }
 }
