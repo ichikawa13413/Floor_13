@@ -73,8 +73,11 @@ public class Player : MonoBehaviour
     [SerializeField] private LayerMask itemLayer;
     [SerializeField] private float maxDistance;
     private static readonly Vector2 CAMERA_CENTER = new Vector2(0.5f, 0.5f);
-    private Subject<Item> getItemSubject;//プレイヤーがアイテムを拾ったら通知
-    public Observable<Item> GetItemObservable => getItemSubject;
+
+    //--ライフ系--
+    [SerializeField] private float life;
+    [SerializeField] private float reduceRate;
+    [SerializeField] private float recoverRate;
 
     [Inject]
     public void Construct(SlotGrid slotGrid)
@@ -100,7 +103,6 @@ public class Player : MonoBehaviour
         keyboardSubject = new Subject<Unit>();
         maxStaminaSubject = new Subject<Unit>();
         consumeSubject = new Subject<Unit>();
-        getItemSubject = new Subject<Item>();
     }
 
     private void Start()
@@ -143,7 +145,7 @@ public class Player : MonoBehaviour
             consumeSubject.OnNext(Unit.Default);
         }
 
-        //PickUpItem();
+        Debug.Log(life);
     }
 
     private void OnEnable()
@@ -436,5 +438,32 @@ public class Player : MonoBehaviour
 
         _slotGrid.SetItem(getItem);
         Destroy(hit.collider.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Enemy enemy = collision.collider.GetComponent<Enemy>();
+
+        if (enemy != null)
+        {
+            ReduceLife();
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        RecoverLife();
+    }
+
+    //ライフの減少機能
+    private void ReduceLife()
+    {
+        life -= reduceRate * Time.deltaTime;
+    }
+
+    //ライフの回復機能
+    private void RecoverLife()
+    {
+        //ライフが上限まで回復する。
     }
 }

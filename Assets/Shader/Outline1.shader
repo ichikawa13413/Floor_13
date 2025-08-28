@@ -1,100 +1,171 @@
-Shader "Unlit/OutlineShader"
+Shader "Custom/HighlightShader"
 {
-    // インスペクターに表示されるプロパティ
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _OutlineColor ("Outline Color", Color) = (1, 0, 0, 1) // アウトラインの色 (デフォルトは赤)
-        _OutlineWidth ("Outline Width", Range(0, 0.1)) = 0.02 // アウトラインの太さ
+        _Color ("Main Color", Color) = (1,1,1,1)
+        _HighlightColor ("Highlight Color", Color) = (1,1,0,1)
+        _OutlineWidth ("Outline Width", Range(0.0, 0.1)) = 0.02
+        _GlowIntensity ("Glow Intensity", Range(0.0, 5.0)) = 2.0
+        _PulseSpeed ("Pulse Speed", Range(0.0, 10.0)) = 2.0
+        _EnableHighlight ("Enable Highlight", Range(0,1)) = 0
     }
+
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "Queue"="Transparent" "RenderType"="Transparent" }
         LOD 100
 
-        // パス1: アウトラインの描画 (裏側を拡大して描画)
+        // パス1: アウトライン描画
         Pass
         {
-            Cull Front // ポリゴンの「表」側を描画しない（裏側だけ描画する）
+            Name "Outline"
+            Cull Front
+            ZWrite Off
+            ZTest LEqual
+            Blend SrcAlpha OneMinusSrcAlpha
 
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            
-            #include "UnityCG.cginc"
+            HLSLPROGRAM
+            #pragma vertex VertOutline
+            #pragma fragment FragOutline
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct appdata
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL; // 法線ベクトル
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 vertex : SV_POSITION;
+                float4 positionCS : SV_POSITION;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            float _OutlineWidth;
-            fixed4 _OutlineColor;
+            CBUFFER_START(UnityPerMaterial)
+                float4 _HighlightColor;
+                float _OutlineWidth;
+                float _GlowIntensity;
+                float _PulseSpeed;
+                float _EnableHighlight;
+            CBUFFER_END
 
-            v2f vert (appdata v)
+            Varyings VertOutline(Attributes input)
             {
-                v2f o;
-                // 頂点位置を法線方向に少しだけ押し出すことで拡大する
-                v.vertex.xyz += v.normal * _OutlineWidth;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                return o;
+                Varyings output = (Varyings)0;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+                // 法線方向に頂点を押し出してアウトライン作成
+                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                positionWS += normalWS * _OutlineWidth;
+                
+                output.positionCS = TransformWorldToHClip(positionWS);
+                return output;
             }
-            
-            fixed4 frag (v2f i) : SV_Target
+
+            half4 FragOutline(Varyings input) : SV_Target
             {
-                // アウトラインの色を返す
-                return _OutlineColor;
+                // 時間によるパルス効果
+                float pulse = sin(_Time.y * _PulseSpeed) * 0.3 + 0.7;
+                float4 outlineColor = _HighlightColor;
+                outlineColor.rgb *= _GlowIntensity * pulse;
+                outlineColor.a *= _EnableHighlight;
+                
+                return outlineColor;
             }
-            ENDCG
+            ENDHLSL
         }
 
-        // パス2: 通常のオブジェクト描画
+        // パス2: メインオブジェクト描画
         Pass
         {
-            Cull Back // ポリゴンの「裏」側を描画しない（通常の描画）
+            Name "Forward"
+            Tags { "LightMode" = "UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite On
+            ZTest LEqual
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            
-            #include "UnityCG.cginc"
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _SHADOWS_SOFT
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
+                float4 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
+                float3 normalOS : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct v2f
+            struct Varyings
             {
                 float2 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD1;
+                float3 normalWS : TEXCOORD2;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
-            
-            v2f vert (appdata v)
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
+                float4 _Color;
+                float4 _HighlightColor;
+                float _OutlineWidth;
+                float _GlowIntensity;
+                float _PulseSpeed;
+                float _EnableHighlight;
+            CBUFFER_END
+
+            Varyings vert(Attributes input)
             {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                return o;
+                Varyings output = (Varyings)0;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+                output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                output.positionCS = TransformWorldToHClip(output.positionWS);
+                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+
+                return output;
             }
-            
-            fixed4 frag (v2f i) : SV_Target
+
+            half4 frag(Varyings input) : SV_Target
             {
-                // テクスチャの色を返す
-                fixed4 col = tex2D(_MainTex, i.uv);
-                return col;
+                half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                half4 mainColor = texColor * _Color;
+
+                // ライティング計算
+                Light mainLight = GetMainLight();
+                float3 lightDir = normalize(mainLight.direction);
+                float3 normalWS = normalize(input.normalWS);
+                float NdotL = saturate(dot(normalWS, lightDir));
+                
+                half3 lighting = mainLight.color * NdotL + SampleSH(normalWS) * 0.3;
+                mainColor.rgb *= lighting;
+
+                // ハイライトが有効な場合、わずかに明るくする
+                if (_EnableHighlight > 0.5)
+                {
+                    mainColor.rgb += _HighlightColor.rgb * 0.1;
+                }
+
+                return mainColor;
             }
-            ENDCG
+            ENDHLSL
         }
     }
+    FallBack "Sprites/Default"
 }
