@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditorInternal.Profiling.Memory.Experimental;
 using Cysharp.Threading.Tasks;
+using TMPro;
 
 public class SlotGrid : MonoBehaviour
 {
@@ -62,8 +63,8 @@ public class SlotGrid : MonoBehaviour
     private buttonState currentButtonState;
 
     //--アイテムを拾った時に使うもの--
-    public bool canGetItem {  get; private set; }
     private const int FIRST_INDEX = 0;
+    private const int EMPTY_SLOT_COUNT = 0;
 
     [Inject]
     public void Construct(IObjectResolver container,Canvas canvas, Player player)
@@ -91,8 +92,6 @@ public class SlotGrid : MonoBehaviour
         decisionSubject = new Subject<Unit>();
         currentArrowState = arrowState.nullArrowState;
         currentButtonState = buttonState.nullButtonState;
-
-        canGetItem = true;
     }
 
     private void Start()
@@ -133,15 +132,6 @@ public class SlotGrid : MonoBehaviour
     {
         Debug.Log(currentButtonState);
         Debug.Log(currentSlectIndex);
-        Debug.Log(canGetItem);
-        if (maxSlot == gettedItems.Length)
-        {
-            canGetItem = false;
-        }
-        else
-        {
-            canGetItem = true;
-        }
     }
 
     private void OnEnable()
@@ -475,5 +465,11 @@ public class SlotGrid : MonoBehaviour
         int currentIndex = nullIndex[FIRST_INDEX];
         Slot currentSlot = slots[currentIndex];
         currentSlot.SetItem(item);
+    }
+
+    public bool CanGetItem()
+    {
+        int nullSlotCount = slots.Where(slot => slot.MyItem == null).ToList().Count;
+        return nullSlotCount > EMPTY_SLOT_COUNT;
     }
 }

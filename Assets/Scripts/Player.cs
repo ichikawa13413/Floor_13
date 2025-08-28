@@ -21,7 +21,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float plusRate;
     [SerializeField] private float dashSpeed;
     [SerializeField] private int maxDashAngle;
-    public float maxStamina {  get; private set; }
+    [SerializeField] private float maxStamina;
+    public float MaxStamina { get => maxStamina; }
     public float stamina {  get; private set; }
     public bool isDashing { get; private set; }
     private Subject<Unit> maxStaminaSubject;//スタミナが満タンになったら通知
@@ -41,7 +42,8 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector3 fpsViwe;
     [SerializeField] private Vector3 tpsViwe;
     private Vector2 cameraDirection;
-    private float xRotation = 0;
+    private float xRotation;
+    private const int XROTATION_CENTER = 0;
     private bool OnChange;//trueの時はTPS視点になっている時、falseの時はFPS視点になっている時
 
     //--アニメーション関係--
@@ -52,6 +54,8 @@ public class Player : MonoBehaviour
     private static readonly int isRunHash = Animator.StringToHash("isRun");
     private static readonly int jumpHash = Animator.StringToHash("Jump");
     private static readonly int isGroundHash = Animator.StringToHash("isGround");
+    private const int STOP_ANIMARTION = 0;
+    private const int START_ANIMARTION = 1;
 
     //--インベントリ関連--
     private SlotGrid _slotGrid;
@@ -85,9 +89,12 @@ public class Player : MonoBehaviour
 
         _animator = GetComponent<Animator>();
 
+        xRotation = XROTATION_CENTER;
+
         OnChange = false;
-        maxStamina = 100;
-        stamina = maxStamina;
+        stamina = MaxStamina;
+
+        isOpenInventory = false;
 
         closeSubject = new Subject<Unit>();
         keyboardSubject = new Subject<Unit>();
@@ -101,8 +108,6 @@ public class Player : MonoBehaviour
         //マウスカーソルを中央に固定し（1行目）、消す（2行目）
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        isOpenInventory = false;
     }
 
     private void FixedUpdate()
@@ -129,16 +134,16 @@ public class Player : MonoBehaviour
         }
 
         //スタミナの状態をStaminaSliderへ通知
-        if (stamina == maxStamina)
+        if (stamina == MaxStamina)
         {
             maxStaminaSubject.OnNext(Unit.Default);
         }
-        else if(stamina != maxStamina)
+        else if(stamina != MaxStamina)
         {
             consumeSubject.OnNext(Unit.Default);
         }
 
-        PickUpItem();
+        //PickUpItem();
     }
 
     private void OnEnable()
@@ -166,6 +171,9 @@ public class Player : MonoBehaviour
         input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;
         input.actions["DecisionButton"].started += _slotGrid.OnDecisionButton;
         input.actions["QuitButton"].started += _slotGrid.OnQuitChoice;
+
+        //--アイテムを拾う系--
+        input.actions["Get"].started += OnGetItem;
     }
 
     private void OnDisable()
@@ -193,6 +201,9 @@ public class Player : MonoBehaviour
         input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;
         input.actions["DecisionButton"].started -= _slotGrid.OnDecisionButton;
         input.actions["QuitButton"].started -= _slotGrid.OnQuitChoice;
+
+        //--アイテムを拾う系--
+        input.actions["Get"].started -= OnGetItem;
     }
     
     //プレイヤーの移動処理
@@ -267,7 +278,7 @@ public class Player : MonoBehaviour
         else if (!isDashing)
         {
             stamina += plusRate * Time.deltaTime;
-            stamina = Mathf.Min(stamina,maxStamina);
+            stamina = Mathf.Min(stamina,MaxStamina);
         }
     }
 
@@ -303,6 +314,27 @@ public class Player : MonoBehaviour
             currentCamera.transform.localPosition = tpsViwe;
             OnChange =true;
 #endif
+        }
+    }
+
+    private void OnGetItem(InputAction.CallbackContext context)
+    {
+        if (currentCamera == null) return;
+
+        if (!_slotGrid.CanGetItem())
+        {
+            Debug.Log("これ以上アイテムを取れません");
+            return;
+        }
+
+        RaycastHit hit;
+        //画面の中央かつ指定した距離にItemタグを持っているオブジェクトがあったらPickUpItemメソッドを呼び出す
+        if (Physics.Raycast(currentCamera.ViewportPointToRay(CAMERA_CENTER), out hit, maxDistance))
+        {
+            if (hit.collider.CompareTag("Item"))
+            {
+                PickUpItem(hit);
+            }
         }
     }
 
@@ -354,8 +386,8 @@ public class Player : MonoBehaviour
 
         isOpenInventory = true;
 
-        _animator.speed = 0f;
-        _animator.SetFloat(SpeedHash, 0);
+        _animator.speed = STOP_ANIMARTION;
+        _animator.SetFloat(SpeedHash, STOP_ANIMARTION);
 
         FreezePlayer();
         direction = Vector2.zero;
@@ -371,7 +403,7 @@ public class Player : MonoBehaviour
 
         isOpenInventory = false;
 
-        _animator.speed = 1f;
+        _animator.speed = START_ANIMARTION;
 
         UnFreezePlayer();
 
@@ -392,28 +424,17 @@ public class Player : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
-    private void PickUpItem()
+    /// <summary>
+    /// アイテムを拾う処理。rayが当たったアイテムを情報取得し、それをslotGridへ送る。
+    /// その後、アイテムオブジェクトを破壊する。
+    /// </summary>
+    /// <param name="hit">OnGetItemから送られてきたRaycastHit</param>
+    private void PickUpItem(RaycastHit hit)
     {
-        if (currentCamera == null) return;
+        ItemHolder holder = hit.collider.GetComponent<ItemHolder>();
+        Item getItem = holder.itemData;
 
-        RaycastHit hit;
-        if (Physics.Raycast(currentCamera.ViewportPointToRay(CAMERA_CENTER),out hit,maxDistance))
-        {
-            if (hit.collider.CompareTag("Item"))
-            {
-                ItemHolder holder = hit.collider.GetComponent<ItemHolder>();
-                Item getItem = holder.itemData;
-
-                if (_slotGrid.canGetItem)
-                {
-                    _slotGrid.SetItem(getItem);
-                    Destroy(hit.collider.gameObject);
-                }
-                else
-                {
-                    Debug.Log("これ以上アイテムを拾えません");
-                }
-            }
-        }
+        _slotGrid.SetItem(getItem);
+        Destroy(hit.collider.gameObject);
     }
 }

@@ -30,7 +30,7 @@ public class StaminaSlider : MonoBehaviour
     {
         if(_player != null)
         {
-            _slider.maxValue = _player.maxStamina;
+            _slider.maxValue = _player.MaxStamina;
         }
         else
         {
