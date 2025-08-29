@@ -76,8 +76,15 @@ public class Player : MonoBehaviour
 
     //--ライフ系--
     [SerializeField] private float life;
+    [SerializeField] private float maxLife;
     [SerializeField] private float reduceRate;
     [SerializeField] private float recoverRate;
+    private enum lifeState
+    {
+        alive,
+        death
+    }
+    private lifeState currentLifeState;
 
     [Inject]
     public void Construct(SlotGrid slotGrid)
@@ -103,6 +110,8 @@ public class Player : MonoBehaviour
         keyboardSubject = new Subject<Unit>();
         maxStaminaSubject = new Subject<Unit>();
         consumeSubject = new Subject<Unit>();
+
+        currentLifeState = lifeState.alive;
     }
 
     private void Start()
@@ -114,6 +123,11 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (currentLifeState == lifeState.death)
+        {
+            return;
+        }
+
         //inventory使用中は操作不可
         if (!isOpenInventory)
         {
@@ -123,6 +137,11 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        if(currentLifeState == lifeState.death)
+        {
+            return;
+        }
+
         //地面判定を行う
         isGround = Physics.CheckSphere(_transform.position, 0.1f, groundLayer);
 
@@ -458,12 +477,22 @@ public class Player : MonoBehaviour
     //ライフの減少機能
     private void ReduceLife()
     {
+        if (currentLifeState == lifeState.death) return;
+
         life -= reduceRate * Time.deltaTime;
+        if (life <= 0)
+        {
+            currentLifeState = lifeState.death;
+            Debug.Log("ライフが0になりました");
+        }
     }
 
     //ライフの回復機能
     private void RecoverLife()
     {
-        //ライフが上限まで回復する。
+        if(currentLifeState == lifeState.death) return;
+
+        life += recoverRate * Time.deltaTime;
+        life = Mathf.Min(life, maxLife);
     }
 }
