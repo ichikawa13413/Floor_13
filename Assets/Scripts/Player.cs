@@ -1,6 +1,9 @@
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using R3;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
@@ -77,11 +80,13 @@ public class Player : MonoBehaviour
     //--ライフ系--
     [SerializeField] private float life;
     [SerializeField] private float maxLife;
-    [SerializeField] private float reduceRate;
+    [SerializeField] private float damageRate;
     [SerializeField] private float recoverRate;
+    private CancellationTokenSource healingCTS;
     private enum lifeState
     {
         alive,
+        nervous,//このステートは敵から攻撃を受けた時のステート
         death
     }
     private lifeState currentLifeState;
@@ -112,6 +117,7 @@ public class Player : MonoBehaviour
         consumeSubject = new Subject<Unit>();
 
         currentLifeState = lifeState.alive;
+        healingCTS = new CancellationTokenSource();
     }
 
     private void Start()
@@ -137,6 +143,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log(currentLifeState);
         if(currentLifeState == lifeState.death)
         {
             return;
@@ -465,34 +472,79 @@ public class Player : MonoBehaviour
 
         if (enemy != null)
         {
-            ReduceLife();
+            TakeDamage(damageRate);
         }
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        RecoverLife();
+        //RecoverLife();
     }
 
     //ライフの減少機能
-    private void ReduceLife()
+    private void TakeDamage(float damage)
     {
         if (currentLifeState == lifeState.death) return;
 
-        life -= reduceRate * Time.deltaTime;
+        if (currentLifeState == lifeState.nervous)
+        {
+            healingCTS.Cancel();
+            healingCTS = new CancellationTokenSource();
+            Debug.Log("回復を中断");
+        }
+
+        life -= damage;
+
         if (life <= 0)
         {
-            currentLifeState = lifeState.death;
+            ChangeLifeState(lifeState.death);
             Debug.Log("ライフが0になりました");
+            return;
         }
+
+        ChangeLifeState(lifeState.nervous);
     }
 
     //ライフの回復機能
-    private void RecoverLife()
+    private async UniTask HealingLife(CancellationToken token)
     {
-        if(currentLifeState == lifeState.death) return;
+        await UniTask.WaitForSeconds(5f, cancellationToken: token);
 
-        life += recoverRate * Time.deltaTime;
-        life = Mathf.Min(life, maxLife);
+        while (life <= maxLife)
+        {
+            if (token.IsCancellationRequested)
+            {
+                Debug.Log("回復がcancelされました");
+                return;
+            }
+
+            await UniTask.WaitForSeconds(1f);
+            life += recoverRate;
+            Debug.Log("ライフ回復中");
+        }
+
+        life = Mathf.Clamp(life, 0, maxLife);
+        ChangeLifeState (lifeState.alive);
+        Debug.Log("回復完了");
+    }
+
+    private void ChangeLifeState(lifeState state)
+    {
+        currentLifeState = state;
+
+        switch (state)
+        {
+            case lifeState.alive:
+                //aliveステートに移行した時に実行したい処理を追加
+                break;
+            case lifeState.nervous:
+                HealingLife(healingCTS.Token);
+                break;
+            case lifeState.death:
+                //deathステートに移行した時に実行したい処理を追加
+                break;
+            default:
+                break;
+        }
     }
 }
