@@ -463,6 +463,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0fb365b03033e345ad1b4984b74e6b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damagePower: 30
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -3548,8 +3549,9 @@ MonoBehaviour:
   maxDistance: 3
   life: 100
   maxLife: 100
-  damageRate: 50
-  recoverRate: 15
+  healingPoint: 5
+  startWait: 30
+  healingRate: 3
 --- !u!136 &5392821631121995558
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ public class MeinLifeTimeScope : LifetimeScope
     [SerializeField] private SlotGrid _slotGrid;
     [SerializeField] private Slot _slot;
     [SerializeField] private Canvas _canvas;
+    [SerializeField] private GameOverUIManager _gameOverUIManager;
 
     protected override void Configure(IContainerBuilder builder)
     {
@@ -15,5 +16,6 @@ public class MeinLifeTimeScope : LifetimeScope
         builder.RegisterInstance(_slotGrid);
         builder.RegisterInstance(_slot);
         builder.RegisterInstance(_canvas);
+        builder.RegisterInstance(_gameOverUIManager);
     }
 }

@@ -80,21 +80,25 @@ public class Player : MonoBehaviour
     //--ライフ系--
     [SerializeField] private float life;
     [SerializeField] private float maxLife;
-    [SerializeField] private float damageRate;
-    [SerializeField] private float recoverRate;
+    [SerializeField] private float healingPoint;
+    [SerializeField] private float startWait;
+    [SerializeField] private float healingRate;
     private CancellationTokenSource healingCTS;
+    private const int MINIMUM_LIFE = 0;
+    private GameOverUIManager _gameOverUIManager;
     private enum lifeState
     {
-        alive,
-        nervous,//このステートは敵から攻撃を受けた時のステート
-        death
+        alive,      //通常状態
+        nervous,    //緊張状態
+        death       //死亡状態
     }
     private lifeState currentLifeState;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid)
+    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager)
     {
         _slotGrid = slotGrid;
+        _gameOverUIManager = gameOverUIManager;
     }
 
     private void Awake()
@@ -472,7 +476,7 @@ public class Player : MonoBehaviour
 
         if (enemy != null)
         {
-            TakeDamage(damageRate);
+            TakeDamage(enemy.EnemyDamagePower);
         }
     }
 
@@ -505,10 +509,14 @@ public class Player : MonoBehaviour
         ChangeLifeState(lifeState.nervous);
     }
 
-    //ライフの回復機能
+    /// <summary>
+    /// 実装されてから指定した時間待ち、ライフが上限値以上まで回復したらステートをaliveに変更
+    /// </summary>
+    /// <param name="token">このメソッドが実行された時のCancellationToken</param>
+    /// <returns>回復中に攻撃されたらunitask終了</returns>
     private async UniTask HealingLife(CancellationToken token)
     {
-        await UniTask.WaitForSeconds(5f, cancellationToken: token);
+        await UniTask.WaitForSeconds(startWait, cancellationToken: token);
 
         while (life <= maxLife)
         {
@@ -518,12 +526,12 @@ public class Player : MonoBehaviour
                 return;
             }
 
-            await UniTask.WaitForSeconds(1f);
-            life += recoverRate;
+            await UniTask.WaitForSeconds(healingRate);
+            life += healingPoint;
             Debug.Log("ライフ回復中");
         }
 
-        life = Mathf.Clamp(life, 0, maxLife);
+        life = Mathf.Clamp(life, MINIMUM_LIFE, maxLife);
         ChangeLifeState (lifeState.alive);
         Debug.Log("回復完了");
     }
@@ -541,7 +549,8 @@ public class Player : MonoBehaviour
                 HealingLife(healingCTS.Token);
                 break;
             case lifeState.death:
-                //deathステートに移行した時に実行したい処理を追加
+                //deathステートに移行した時に実行したい処理を追加]
+                _gameOverUIManager.CreateGameOverText();
                 break;
             default:
                 break;

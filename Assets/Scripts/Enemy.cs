@@ -2,5 +2,6 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    //ここにエネミーの処理を書く
+    [SerializeField] private float damagePower;
+    public float EnemyDamagePower { get => damagePower; }
 }
