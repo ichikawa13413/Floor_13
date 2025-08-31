@@ -13,8 +13,6 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     private Item item;
     private Image highLight;
     public Item MyItem { get => item; private set => item = value; }
-    private Subject<Unit> keyboardSubject;
-    public Observable<Unit> keyboardObservable => keyboardSubject;
 
     //--VContainerŠÖ˜A--
     private Player _player;

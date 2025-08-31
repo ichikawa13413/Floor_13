@@ -133,11 +133,6 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (currentLifeState == lifeState.death)
-        {
-            return;
-        }
-
         //inventory使用中は操作不可
         if (!isOpenInventory)
         {
@@ -148,10 +143,6 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Debug.Log(currentLifeState);
-        if(currentLifeState == lifeState.death)
-        {
-            return;
-        }
 
         //地面判定を行う
         isGround = Physics.CheckSphere(_transform.position, 0.1f, groundLayer);
@@ -181,6 +172,7 @@ public class Player : MonoBehaviour
     private void OnEnable()
     {
         if(input == null) return;
+
         //移動系
         input.actions["Move"].performed += ChangeDirection;
         input.actions["Move"].canceled += ChangeDirection;
@@ -195,7 +187,7 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started += OnInventory;
-        
+
         //--コントローラーでインベントリを操作系--
         input.actions["ChoiceUp"].started += _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
@@ -549,8 +541,10 @@ public class Player : MonoBehaviour
                 HealingLife(healingCTS.Token);
                 break;
             case lifeState.death:
-                //deathステートに移行した時に実行したい処理を追加]
+                //deathステートに移行した時に実行したい処理を追加
                 _gameOverUIManager.CreateGameOverText();
+                //今はenabledで操作を無効かしているが、ゲームオーバー時はコンテニューなどの操作を出来るようにするため変更予定
+                input.enabled = false;
                 break;
             default:
                 break;
