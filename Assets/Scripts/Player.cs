@@ -46,7 +46,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector3 tpsViwe;
     private Vector2 cameraDirection;
     private float xRotation;
-    private const int XROTATION_CENTER = 0;
+    private const int X_ROTATION_CENTER = 0;
     private bool OnChange;//trueの時はTPS視点になっている時、falseの時はFPS視点になっている時
 
     //--アニメーション関係--
@@ -94,11 +94,15 @@ public class Player : MonoBehaviour
     }
     private lifeState currentLifeState;
 
+    //--ノックバック系--
+    private Enemy _enemy;
+
     [Inject]
-    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager)
+    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager, Enemy enemy)
     {
         _slotGrid = slotGrid;
         _gameOverUIManager = gameOverUIManager;
+        _enemy = enemy;
     }
 
     private void Awake()
@@ -108,7 +112,7 @@ public class Player : MonoBehaviour
 
         _animator = GetComponent<Animator>();
 
-        xRotation = XROTATION_CENTER;
+        xRotation = X_ROTATION_CENTER;
 
         OnChange = false;
         stamina = MaxStamina;
@@ -133,6 +137,16 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        //ノックバック処理が終了するまで操作を禁止
+        if (_enemy.currentKnockback == Enemy.knockbackState.knockbackActive)
+        {
+            input.enabled = false;
+        }
+        else
+        {
+            input.enabled = true;
+        }
+
         //inventory使用中は操作不可
         if (!isOpenInventory)
         {
