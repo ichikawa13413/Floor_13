@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using R3;
@@ -7,6 +8,7 @@ using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
+using static Enemy;
 
 public class Player : MonoBehaviour
 {
@@ -95,7 +97,25 @@ public class Player : MonoBehaviour
     private lifeState currentLifeState;
 
     //--ノックバック系--
+    [SerializeField] private float invincibleTime;
+    [SerializeField] private float knockbackForce;
+    [SerializeField] private Vector3 knockbackUpDirection;
+    [SerializeField] private float knockbackDuration;
+    private Vector3 knockbackDirection;
     private Enemy _enemy;
+    private const int RESET_Y_DIRECTION = 0;
+    public enum invincibleState
+    {
+        normal,
+        invincible
+    }
+    public invincibleState currentInvincible { get; private set; }
+    private enum knockbackState
+    {
+        knockbackActive,   //ノックバック中
+        knockbackFinish    //ノックバック終了
+    }
+    private knockbackState currentKnockback;
 
     [Inject]
     public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager, Enemy enemy)
@@ -126,6 +146,9 @@ public class Player : MonoBehaviour
 
         currentLifeState = lifeState.alive;
         healingCTS = new CancellationTokenSource();
+
+        currentInvincible = invincibleState.normal;
+        currentKnockback = knockbackState.knockbackFinish;
     }
 
     private void Start()
@@ -133,13 +156,15 @@ public class Player : MonoBehaviour
         //マウスカーソルを中央に固定し（1行目）、消す（2行目）
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        //_enemy.knockbackObservable.Subscribe(enemy => TakeDamage(enemy.EnemyDamagePower));
     }
 
     private void FixedUpdate()
     {
-        //ノックバック処理が終了するまで操作を禁止
-        if (_enemy.currentKnockback == Enemy.knockbackState.knockbackActive)
+        if (currentKnockback == knockbackState.knockbackActive)
         {
+            rb.AddForce(knockbackDirection,ForceMode.Impulse);
             input.enabled = false;
         }
         else
@@ -181,6 +206,8 @@ public class Player : MonoBehaviour
         }
 
         Debug.Log(life);
+        Debug.Log(currentLifeState);
+
     }
 
     private void OnEnable()
@@ -482,7 +509,7 @@ public class Player : MonoBehaviour
 
         if (enemy != null)
         {
-            TakeDamage(enemy.EnemyDamagePower);
+            //TakeDamage(enemy.EnemyDamagePower);
         }
     }
 
@@ -494,7 +521,11 @@ public class Player : MonoBehaviour
     //ライフの減少機能
     private void TakeDamage(float damage)
     {
-        if (currentLifeState == lifeState.death) return;
+        //プレイヤーの状態が死亡もしくは無敵状態だったらリターン
+        if (currentLifeState == lifeState.death || currentInvincible == invincibleState.invincible)
+        {
+            return;
+        }
 
         if (currentLifeState == lifeState.nervous)
         {
@@ -513,6 +544,7 @@ public class Player : MonoBehaviour
         }
 
         ChangeLifeState(lifeState.nervous);
+        StartInvincible().Forget();
     }
 
     /// <summary>
@@ -563,5 +595,36 @@ public class Player : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    /// <summary>
+    /// ノックバックする方向を取得し、フィールドに宣言した変数に格納する
+    /// 格納後、ステート変更し、指定した時間待機してステートを戻す
+    /// </summary>
+    /// <param name="player">エネミーに当たったプレイヤー</param>>
+    public async UniTask GetKnockBackDirection(Vector3 enemyPos)
+    {
+        if (currentInvincible == invincibleState.invincible) return;
+
+        rb.linearVelocity = Vector3.zero;
+
+        Vector3 direction = _transform.position - enemyPos;
+        direction.y = RESET_Y_DIRECTION;
+        knockbackDirection = (direction.normalized * knockbackForce) + knockbackUpDirection;
+
+        currentKnockback = knockbackState.knockbackActive;
+        await UniTask.WaitForSeconds(knockbackDuration);
+        currentKnockback = knockbackState.knockbackFinish;
+
+        //ノックバックを処理先にやってその後ダメージ処理をする
+        TakeDamage(_enemy.EnemyDamagePower);
+    }
+
+    //無敵時間をスタート
+    private async UniTask StartInvincible()
+    {
+        currentInvincible = invincibleState.invincible;
+        await UniTask.WaitForSeconds(invincibleTime);
+        currentInvincible = invincibleState.normal;
     }
 }

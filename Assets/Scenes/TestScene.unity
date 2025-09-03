@@ -465,9 +465,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePower: 1
-  knockbackForce: 10
+  knockbackForce: 250
   knockbackUpDirection: {x: 0, y: 0.2, z: 0}
-  waitSeconds: 0.4
+  knockbackDuration: 0.4
 --- !u!54 &247652438
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1900,6 +1900,7 @@ MonoBehaviour:
   - {fileID: 1858727256}
   - {fileID: 1692468127073056738}
   - {fileID: 8471292853955144245}
+  - {fileID: 247652432}
   _player: {fileID: 5392821631121995557}
   _slotGrid: {fileID: 8471292853955144246}
   _slot: {fileID: 2280506819284741066, guid: db013227bad1c4a42844e85f519b26e4, type: 3}
@@ -3631,6 +3632,7 @@ MonoBehaviour:
   healingPoint: 5
   startWait: 30
   healingRate: 3
+  invincibleTime: 1
 --- !u!136 &5392821631121995558
 CapsuleCollider:
   m_ObjectHideFlags: 0
