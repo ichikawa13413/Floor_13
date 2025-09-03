@@ -91,7 +91,7 @@ public class Player : MonoBehaviour
     private enum lifeState
     {
         alive,      //通常状態
-        nervous,    //緊張状態
+        healing,    //緊張状態
         death       //死亡状態
     }
     private lifeState currentLifeState;
@@ -505,36 +505,37 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Enemy enemy = collision.collider.GetComponent<Enemy>();
 
-        if (enemy != null)
-        {
-            //TakeDamage(enemy.EnemyDamagePower);
-        }
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        //RecoverLife();
+
     }
 
-    //ライフの減少機能
-    private void TakeDamage(float damage)
+    /// <summary>
+    /// エネミーに接触したらダメージ処理をする。その後、ノックバック処理をする
+    /// </summary>
+    /// <param name="enemy">接触したエネミー</param>
+    public void TakeDamage(Enemy enemy)
     {
+        if(enemy == null) return;
+
         //プレイヤーの状態が死亡もしくは無敵状態だったらリターン
         if (currentLifeState == lifeState.death || currentInvincible == invincibleState.invincible)
         {
             return;
         }
 
-        if (currentLifeState == lifeState.nervous)
+        //ライフ回復中に攻撃を受けたら回復を中断
+        if (currentLifeState == lifeState.healing)
         {
             healingCTS.Cancel();
             healingCTS = new CancellationTokenSource();
             Debug.Log("回復を中断");
         }
 
-        life -= damage;
+        life -= enemy.EnemyDamagePower;
 
         if (life <= 0)
         {
@@ -543,10 +544,36 @@ public class Player : MonoBehaviour
             return;
         }
 
-        ChangeLifeState(lifeState.nervous);
-        StartInvincible().Forget();
+        ChangeLifeState(lifeState.healing);
+        TakeKnockBack(enemy).Forget();
     }
 
+    /// <summary>
+    /// ノックバックする方向を取得し、フィールドに宣言した変数に格納する
+    /// 格納後、ステート変更し、指定した時間待機してステートを戻す
+    /// </summary>
+    /// <param name="enemy">プレイヤーが当たったエネミー</param>>
+    private async UniTask TakeKnockBack(Enemy enemy)
+    {
+        //プレイヤーの状態が死亡もしくは無敵状態だったらリターン
+        if (currentLifeState == lifeState.death || currentInvincible == invincibleState.invincible)
+        {
+            return;
+        }
+
+        rb.linearVelocity = Vector3.zero;
+
+        Vector3 direction = _transform.position - enemy.transform.position;
+        direction.y = RESET_Y_DIRECTION;
+        knockbackDirection = (direction.normalized * knockbackForce) + knockbackUpDirection;
+
+        currentKnockback = knockbackState.knockbackActive;
+        await UniTask.WaitForSeconds(knockbackDuration);
+        currentKnockback = knockbackState.knockbackFinish;
+
+        StartInvincible().Forget();
+    }
+    
     /// <summary>
     /// 実装されてから指定した時間待ち、ライフが上限値以上まで回復したらステートをaliveに変更
     /// </summary>
@@ -583,8 +610,8 @@ public class Player : MonoBehaviour
             case lifeState.alive:
                 //aliveステートに移行した時に実行したい処理を追加
                 break;
-            case lifeState.nervous:
-                HealingLife(healingCTS.Token);
+            case lifeState.healing:
+                HealingLife(healingCTS.Token).Forget();
                 break;
             case lifeState.death:
                 //deathステートに移行した時に実行したい処理を追加
@@ -597,28 +624,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// ノックバックする方向を取得し、フィールドに宣言した変数に格納する
-    /// 格納後、ステート変更し、指定した時間待機してステートを戻す
-    /// </summary>
-    /// <param name="player">エネミーに当たったプレイヤー</param>>
-    public async UniTask GetKnockBackDirection(Vector3 enemyPos)
-    {
-        if (currentInvincible == invincibleState.invincible) return;
 
-        rb.linearVelocity = Vector3.zero;
-
-        Vector3 direction = _transform.position - enemyPos;
-        direction.y = RESET_Y_DIRECTION;
-        knockbackDirection = (direction.normalized * knockbackForce) + knockbackUpDirection;
-
-        currentKnockback = knockbackState.knockbackActive;
-        await UniTask.WaitForSeconds(knockbackDuration);
-        currentKnockback = knockbackState.knockbackFinish;
-
-        //ノックバックを処理先にやってその後ダメージ処理をする
-        TakeDamage(_enemy.EnemyDamagePower);
-    }
 
     //無敵時間をスタート
     private async UniTask StartInvincible()

@@ -465,9 +465,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePower: 1
-  knockbackForce: 250
-  knockbackUpDirection: {x: 0, y: 0.2, z: 0}
-  knockbackDuration: 0.4
 --- !u!54 &247652438
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3632,7 +3629,10 @@ MonoBehaviour:
   healingPoint: 5
   startWait: 30
   healingRate: 3
-  invincibleTime: 1
+  invincibleTime: 5
+  knockbackForce: 5
+  knockbackUpDirection: {x: 0, y: 0.2, z: 0}
+  knockbackDuration: 1
 --- !u!136 &5392821631121995558
 CapsuleCollider:
   m_ObjectHideFlags: 0
