@@ -1,7 +1,5 @@
-using Cysharp.Threading.Tasks;
-using R3;
 using UnityEngine;
-using VContainer;
+
 
 public class Enemy : MonoBehaviour
 {
@@ -19,14 +17,5 @@ public class Enemy : MonoBehaviour
     private void FixedUpdate()
     {
 
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        Player player = collision.gameObject.GetComponent<Player>();
-        if (player != null)
-        {
-            player.TakeDamage(this);
-        }
     }
 }

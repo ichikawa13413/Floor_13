@@ -496,7 +496,7 @@ public class Player : MonoBehaviour
     /// <param name="hit">OnGetItemから送られてきたRaycastHit</param>
     private void PickUpItem(RaycastHit hit)
     {
-        ItemHolder holder = hit.collider.GetComponent<ItemHolder>();
+        ItemObject holder = hit.collider.GetComponent<ItemObject>();
         Item getItem = holder.itemData;
 
         _slotGrid.SetItem(getItem);
@@ -505,19 +505,18 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-
-    }
-
-    private void OnCollisionExit(Collision collision)
-    {
-
+        Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            TakeDamage(enemy);
+        }
     }
 
     /// <summary>
     /// エネミーに接触したらダメージ処理をする。その後、ノックバック処理をする
     /// </summary>
     /// <param name="enemy">接触したエネミー</param>
-    public void TakeDamage(Enemy enemy)
+    private void TakeDamage(Enemy enemy)
     {
         if(enemy == null) return;
 
@@ -623,8 +622,6 @@ public class Player : MonoBehaviour
                 break;
         }
     }
-
-
 
     //無敵時間をスタート
     private async UniTask StartInvincible()
