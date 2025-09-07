@@ -17,7 +17,6 @@ public class Player : MonoBehaviour
 
     //--移動関係--
     [SerializeField] private PlayerInput input;
-    public PlayerInput MyInput { get => input; private set => input = value; }
     [SerializeField] private float speed;
     private Vector2 direction;
 
@@ -102,7 +101,6 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector3 knockbackUpDirection;
     [SerializeField] private float knockbackDuration;
     private Vector3 knockbackDirection;
-    private Enemy _enemy;
     private const int RESET_Y_DIRECTION = 0;
     public enum invincibleState
     {
@@ -118,11 +116,10 @@ public class Player : MonoBehaviour
     private knockbackState currentKnockback;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager, Enemy enemy)
+    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager)
     {
         _slotGrid = slotGrid;
         _gameOverUIManager = gameOverUIManager;
-        _enemy = enemy;
     }
 
     private void Awake()
@@ -156,12 +153,11 @@ public class Player : MonoBehaviour
         //マウスカーソルを中央に固定し（1行目）、消す（2行目）
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        //_enemy.knockbackObservable.Subscribe(enemy => TakeDamage(enemy.EnemyDamagePower));
     }
 
     private void FixedUpdate()
     {
+        //ノックバック中の処理はFixedUpdateでやる
         if (currentKnockback == knockbackState.knockbackActive)
         {
             rb.AddForce(knockbackDirection,ForceMode.Impulse);
@@ -615,6 +611,9 @@ public class Player : MonoBehaviour
             case lifeState.death:
                 //deathステートに移行した時に実行したい処理を追加
                 _gameOverUIManager.CreateGameOverText();
+                _gameOverUIManager.CreateContinueButton();
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
                 //今はenabledで操作を無効かしているが、ゲームオーバー時はコンテニューなどの操作を出来るようにするため変更予定
                 input.enabled = false;
                 break;

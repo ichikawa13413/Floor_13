@@ -13,9 +13,4 @@ public class Enemy : MonoBehaviour
     {
         _transform = transform;
     }
-
-    private void FixedUpdate()
-    {
-
-    }
 }
