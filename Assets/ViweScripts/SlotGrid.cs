@@ -1,14 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using R3;
+using TMPro;
+using UnityEditorInternal.Profiling.Memory.Experimental;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 using VContainer;
 using VContainer.Unity;
-using R3;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditorInternal.Profiling.Memory.Experimental;
-using Cysharp.Threading.Tasks;
-using TMPro;
 
 public class SlotGrid : MonoBehaviour
 {
@@ -17,7 +18,7 @@ public class SlotGrid : MonoBehaviour
 
     //--Slotの生成--
     [SerializeField] private GameObject slotPrefab;
-    [SerializeField] private int maxSlot;//グリット上に表示させる最大スロット数
+    private int maxSlot;//グリット上に表示させる最大スロット数
     [SerializeField] private Item[] gettedItems;
 
     //--ボタン系--
@@ -43,6 +44,7 @@ public class SlotGrid : MonoBehaviour
     private int currentSlectIndex;
     private int slotsIndex;
     private bool isOpenKeyboard;
+    private PlayerInput playerInput;
 
     //--コントローラーでボタンを操作する系--
     private bool isLockChoice;
@@ -96,6 +98,10 @@ public class SlotGrid : MonoBehaviour
 
     private void Start()
     {
+        if (_player == null) return;
+
+        maxSlot = _player.playerLimitItem;
+
         CreateSlot();
         CreateButton();
 
@@ -123,9 +129,10 @@ public class SlotGrid : MonoBehaviour
             isLockChoice = true;
         });
 
-        //プレイヤーがアイテムを拾ったらセットアイテムをする
-        //Slot current = slots[0];
-        //_player.GetItemObservable.Subscribe(playerItem => current.SetItem(playerItem));
+        playerInput = _player.MyInput;
+
+        //プレイヤーがアイテムを拾ったらSetItem起動
+        _player.getItemObservable.Subscribe(item => SetItem(item));
     }
 
     private void Update()
@@ -142,6 +149,23 @@ public class SlotGrid : MonoBehaviour
             SelectSlot(0);
             currentSlectIndex = 0;
         }
+
+        playerInput.actions["ChoiceUp"].started += OnChoiceUp;
+        playerInput.actions["ChoiceDown"].started += OnChoiceDown;
+        playerInput.actions["ChoiceLeft"].started += OnChoiceLeft;
+        playerInput.actions["ChoiceRight"].started += OnChoiceRight;
+        playerInput.actions["DecisionButton"].started += OnDecisionButton;
+        playerInput.actions["QuitButton"].started += OnQuitChoice;
+    }
+
+    private void OnDisable()
+    {
+        playerInput.actions["ChoiceUp"].started -= OnChoiceUp;
+        playerInput.actions["ChoiceDown"].started -= OnChoiceDown;
+        playerInput.actions["ChoiceLeft"].started -= OnChoiceLeft;
+        playerInput.actions["ChoiceRight"].started -= OnChoiceRight;
+        playerInput.actions["DecisionButton"].started -= OnDecisionButton;
+        playerInput.actions["QuitButton"].started -= OnQuitChoice;
     }
 
     ///-----<スロット系メソッド>-----

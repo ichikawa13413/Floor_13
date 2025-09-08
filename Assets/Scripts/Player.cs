@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
-using static Enemy;
 
 public class Player : MonoBehaviour
 {
@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
 
     //--移動関係--
     [SerializeField] private PlayerInput input;
+    public PlayerInput MyInput { get => input; }
     [SerializeField] private float speed;
     private Vector2 direction;
 
@@ -62,8 +63,16 @@ public class Player : MonoBehaviour
     private const int START_ANIMARTION = 1;
 
     //--インベントリ関連--
+    [SerializeField] private int limitItem;//プレイヤーが所持できるitem数の上限
+    public int playerLimitItem { get => limitItem; }
     private SlotGrid _slotGrid;
     private bool isOpenInventory;
+    private List<Item> itemList;
+    public List<Item> playerItemList { get => itemList; }
+    private ItemObject currentLookItem;
+    private Subject<Item> getItemSubject;//プレイヤーがアイテムをgetしたら通知
+    public Observable<Item> getItemObservable => getItemSubject;
+    
 
     //インベントリをクローズしたら通知
     private Subject<Unit> closeSubject;
@@ -135,6 +144,8 @@ public class Player : MonoBehaviour
         stamina = MaxStamina;
 
         isOpenInventory = false;
+        itemList = new List<Item>();
+        getItemSubject = new Subject<Item>();
 
         closeSubject = new Subject<Unit>();
         keyboardSubject = new Subject<Unit>();
@@ -224,7 +235,7 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started += OnInventory;
-
+        /*
         //--コントローラーでインベントリを操作系--
         input.actions["ChoiceUp"].started += _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
@@ -232,7 +243,7 @@ public class Player : MonoBehaviour
         input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;
         input.actions["DecisionButton"].started += _slotGrid.OnDecisionButton;
         input.actions["QuitButton"].started += _slotGrid.OnQuitChoice;
-
+        */
         //--アイテムを拾う系--
         input.actions["Get"].started += OnGetItem;
     }
@@ -254,7 +265,7 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started -= OnInventory;
-
+        /*
         //--コントローラーでインベントリを操作系--
         input.actions["ChoiceUp"].started -= _slotGrid.OnChoiceUp;
         input.actions["ChoiceDown"].started -= _slotGrid.OnChoiceDown;
@@ -262,7 +273,7 @@ public class Player : MonoBehaviour
         input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;
         input.actions["DecisionButton"].started -= _slotGrid.OnDecisionButton;
         input.actions["QuitButton"].started -= _slotGrid.OnQuitChoice;
-
+        */
         //--アイテムを拾う系--
         input.actions["Get"].started -= OnGetItem;
     }
@@ -311,6 +322,7 @@ public class Player : MonoBehaviour
         cameraDirection = context.ReadValue<Vector2>().normalized;
     }
 
+    //視点操作
     private void LookInput()
     {
         float xDirection = cameraDirection.x * lookSpeed * Time.deltaTime;
@@ -382,7 +394,7 @@ public class Player : MonoBehaviour
     {
         if (currentCamera == null) return;
 
-        if (!_slotGrid.CanGetItem())
+        if (itemList.Count == limitItem)
         {
             Debug.Log("これ以上アイテムを取れません");
             return;
@@ -484,6 +496,24 @@ public class Player : MonoBehaviour
         rb.constraints = RigidbodyConstraints.None;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
+    //todo
+    //↓ハイライトを実装したらこのメソッドに追加する
+    /// <summary>
+    /// レイを飛ばしitemobjectかチェックする
+    /// </summary>
+    /// <returns>プレイヤーが見ているのがitemだったらtrue、それ以外だったfalse</returns>
+    private bool CanGetItem()
+    { 
+        RaycastHit hit;
+        if(Physics.Raycast(currentCamera.ViewportPointToRay(CAMERA_CENTER), out hit, maxDistance))
+        {
+            if (hit.collider.CompareTag("Item"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /// <summary>
     /// アイテムを拾う処理。rayが当たったアイテムを情報取得し、それをslotGridへ送る。
@@ -495,7 +525,8 @@ public class Player : MonoBehaviour
         ItemObject holder = hit.collider.GetComponent<ItemObject>();
         Item getItem = holder.itemData;
 
-        _slotGrid.SetItem(getItem);
+        itemList.Add(getItem);
+        getItemSubject.OnNext(getItem);
         Destroy(hit.collider.gameObject);
     }
 
