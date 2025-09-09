@@ -73,12 +73,16 @@ public class Player : MonoBehaviour
     private ItemObject currentLookItem;
     private Subject<Item> getItemSubject;//プレイヤーがアイテムをgetしたら通知
     public Observable<Item> getItemObservable => getItemSubject;
+    public event Action OnInventoryOpen;
+    public event Action OnInventoryClose;
+    //todo
+    //インベントリが開いているか閉じているか、現在の状態を管理するステートを作成
 
     //--インベントをコントローラーで動かす時に使うイベント一覧--
-    public event Action OnPlayerChoiseUP;
-    public event Action OnPlayerChoiseDOWN;
-    public event Action OnPlayerChoiseLEFT;
-    public event Action OnPlayerChoiseRIGHT;
+    public event Action OnPlayerChoiceUP;
+    public event Action OnPlayerChoiceDOWN;
+    public event Action OnPlayerChoiceLEFT;
+    public event Action OnPlayerChoiceRIGHT;
     public event Action OnPlayerDecisionButton;
     public event Action OnPlayerQuitChoice;
 
@@ -103,7 +107,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float healingRate;
     private CancellationTokenSource healingCTS;
     private const int MINIMUM_LIFE = 0;
-    private GameOverUIManager _gameOverUIManager;
+    private GameUIManager _gameOverUIManager;
     private enum lifeState
     {
         alive,      //通常状態
@@ -133,7 +137,7 @@ public class Player : MonoBehaviour
     private knockbackState currentKnockback;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid, GameOverUIManager gameOverUIManager)
+    public void Construct(SlotGrid slotGrid, GameUIManager gameOverUIManager)
     {
         _slotGrid = slotGrid;
         _gameOverUIManager = gameOverUIManager;
@@ -222,6 +226,7 @@ public class Player : MonoBehaviour
 
         Debug.Log(life);
         Debug.Log(currentLifeState);
+        Debug.Log(itemList.Count);
 
     }
 
@@ -460,7 +465,8 @@ public class Player : MonoBehaviour
     //インベントリ オープン時の処理
     public void OpenSlotGrid()
     {
-        _slotGrid.gameObject.SetActive(true);
+        //_slotGrid.gameObject.SetActive(true);
+        OnInventoryOpen?.Invoke();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -474,42 +480,11 @@ public class Player : MonoBehaviour
         direction = Vector2.zero;
     }
 
-    //---スロットをコントローラーで操作した時にSlotGridクラスへ通知---
-    private void OnChoiceUp(InputAction.CallbackContext context)
-    {
-        OnPlayerChoiseUP?.Invoke();
-    }
-
-    private void OnChoiceDown(InputAction.CallbackContext context)
-    {
-        OnPlayerChoiseDOWN?.Invoke();
-    }
-
-    private void OnChoiceLeft(InputAction.CallbackContext context)
-    {
-        OnPlayerChoiseLEFT?.Invoke();
-    }
-
-    private void OnChoiceRight(InputAction.CallbackContext context)
-    {
-        OnPlayerChoiseRIGHT?.Invoke();
-    }
-
-    private void OnDecision(InputAction.CallbackContext context)
-    {
-        OnPlayerDecisionButton?.Invoke();
-    }
-
-    private void OnQuitChoice(InputAction.CallbackContext context)
-    {
-        OnPlayerQuitChoice?.Invoke();
-    }
-
-
     //インベントリ クローズ時の処理
     public void CloseSlotGrid()
     {
-        _slotGrid.gameObject.SetActive(false);
+        //_slotGrid.gameObject.SetActive(false);
+        OnInventoryClose?.Invoke();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -522,6 +497,37 @@ public class Player : MonoBehaviour
 
         //インベントリを閉じた事を通知
         closeSubject.OnNext(Unit.Default);
+    }
+
+    //---スロットをコントローラーで操作した時にSlotGridクラスへ通知---
+    private void OnChoiceUp(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiceUP?.Invoke();
+    }
+
+    private void OnChoiceDown(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiceDOWN?.Invoke();
+    }
+
+    private void OnChoiceLeft(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiceLEFT?.Invoke();
+    }
+
+    private void OnChoiceRight(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiceRIGHT?.Invoke();
+    }
+
+    private void OnDecision(InputAction.CallbackContext context)
+    {
+        OnPlayerDecisionButton?.Invoke();
+    }
+
+    private void OnQuitChoice(InputAction.CallbackContext context)
+    {
+        OnPlayerQuitChoice?.Invoke();
     }
 
     //プレイヤーの物理演算をすべて制限
@@ -571,6 +577,14 @@ public class Player : MonoBehaviour
     }
 
     public void DropItem(Item item)
+    {
+        if (item != null)
+        {
+            itemList.Remove(item);
+        }
+    }
+
+    public void UseItem(Item item)
     {
         if (item != null)
         {

@@ -8,7 +8,7 @@ public class MeinLifeTimeScope : LifetimeScope
     [SerializeField] private SlotGrid _slotGrid;
     [SerializeField] private Slot _slot;
     [SerializeField] private Canvas _canvas;
-    [SerializeField] private GameOverUIManager _gameOverUIManager;
+    [SerializeField] private GameUIManager _gameOverUIManager;
     [SerializeField] private Enemy _enemy;
     [SerializeField] private SceneLoadManager _sceneLoadManager;
 

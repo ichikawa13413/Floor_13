@@ -133,6 +133,9 @@ public class SlotGrid : MonoBehaviour
 
         //プレイヤーがアイテムを拾ったらSetItem起動
         _player.getItemObservable.Subscribe(item => SetItem(item));
+
+        _player.OnInventoryOpen += ShowInventory;
+        _player.OnInventoryClose += HideInventory;
     }
 
     private void Update()
@@ -149,20 +152,20 @@ public class SlotGrid : MonoBehaviour
             SelectSlot(0);
             currentSlectIndex = 0;
         }
-        _player.OnPlayerChoiseUP += OnChoiceUp;
-        _player.OnPlayerChoiseDOWN += OnChoiceDown;
-        _player.OnPlayerChoiseLEFT += OnChoiceLeft;
-        _player.OnPlayerChoiseRIGHT += OnChoiceRight;
+        _player.OnPlayerChoiceUP += OnChoiceUp;
+        _player.OnPlayerChoiceDOWN += OnChoiceDown;
+        _player.OnPlayerChoiceLEFT += OnChoiceLeft;
+        _player.OnPlayerChoiceRIGHT += OnChoiceRight;
         _player.OnPlayerDecisionButton += OnDecisionButton;
         _player.OnPlayerQuitChoice += OnQuitChoice;
     }
 
     private void OnDisable()
     {
-        _player.OnPlayerChoiseUP -= OnChoiceUp;
-        _player.OnPlayerChoiseDOWN -= OnChoiceDown;
-        _player.OnPlayerChoiseLEFT -= OnChoiceLeft;
-        _player.OnPlayerChoiseRIGHT -= OnChoiceRight;
+        _player.OnPlayerChoiceUP -= OnChoiceUp;
+        _player.OnPlayerChoiceDOWN -= OnChoiceDown;
+        _player.OnPlayerChoiceLEFT -= OnChoiceLeft;
+        _player.OnPlayerChoiceRIGHT -= OnChoiceRight;
         _player.OnPlayerDecisionButton -= OnDecisionButton;
         _player.OnPlayerQuitChoice -= OnQuitChoice;
     }
@@ -205,6 +208,17 @@ public class SlotGrid : MonoBehaviour
             constraint = 4;
         }
     }
+
+    private void ShowInventory()
+    {
+        gameObject.SetActive(true);
+    }
+
+    private void HideInventory()
+    {
+        gameObject.SetActive(false);
+    }
+
     ///------------------------------
 
     ///-----<ボタン系メソッド>-----

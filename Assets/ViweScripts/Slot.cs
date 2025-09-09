@@ -107,6 +107,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     {
         if (MyItem != null)
         {
+            _player.UseItem(MyItem);
             MyItem = null;
             itemImage.color = Color.clear;
         }
