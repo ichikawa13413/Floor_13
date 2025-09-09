@@ -149,23 +149,22 @@ public class SlotGrid : MonoBehaviour
             SelectSlot(0);
             currentSlectIndex = 0;
         }
-
-        playerInput.actions["ChoiceUp"].started += OnChoiceUp;
-        playerInput.actions["ChoiceDown"].started += OnChoiceDown;
-        playerInput.actions["ChoiceLeft"].started += OnChoiceLeft;
-        playerInput.actions["ChoiceRight"].started += OnChoiceRight;
-        playerInput.actions["DecisionButton"].started += OnDecisionButton;
-        playerInput.actions["QuitButton"].started += OnQuitChoice;
+        _player.OnPlayerChoiseUP += OnChoiceUp;
+        _player.OnPlayerChoiseDOWN += OnChoiceDown;
+        _player.OnPlayerChoiseLEFT += OnChoiceLeft;
+        _player.OnPlayerChoiseRIGHT += OnChoiceRight;
+        _player.OnPlayerDecisionButton += OnDecisionButton;
+        _player.OnPlayerQuitChoice += OnQuitChoice;
     }
 
     private void OnDisable()
     {
-        playerInput.actions["ChoiceUp"].started -= OnChoiceUp;
-        playerInput.actions["ChoiceDown"].started -= OnChoiceDown;
-        playerInput.actions["ChoiceLeft"].started -= OnChoiceLeft;
-        playerInput.actions["ChoiceRight"].started -= OnChoiceRight;
-        playerInput.actions["DecisionButton"].started -= OnDecisionButton;
-        playerInput.actions["QuitButton"].started -= OnQuitChoice;
+        _player.OnPlayerChoiseUP -= OnChoiceUp;
+        _player.OnPlayerChoiseDOWN -= OnChoiceDown;
+        _player.OnPlayerChoiseLEFT -= OnChoiceLeft;
+        _player.OnPlayerChoiseRIGHT -= OnChoiceRight;
+        _player.OnPlayerDecisionButton -= OnDecisionButton;
+        _player.OnPlayerQuitChoice -= OnQuitChoice;
     }
 
     ///-----<スロット系メソッド>-----
@@ -266,7 +265,7 @@ public class SlotGrid : MonoBehaviour
 
 
     ///-----<コントローラーでインベントリを操作する系>-----
-    public void OnChoiceUp(InputAction.CallbackContext context)
+    public void OnChoiceUp()
     {
         //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindex0からスタートする
         if (isOpenKeyboard)
@@ -306,7 +305,7 @@ public class SlotGrid : MonoBehaviour
         }
     }
 
-    public void OnChoiceDown(InputAction.CallbackContext context)
+    public void OnChoiceDown()
     {
         //インベントリをキーボードで開いて、コントローラーの操作に切り替わったらindexをリセットする
         if (isOpenKeyboard)
@@ -349,7 +348,7 @@ public class SlotGrid : MonoBehaviour
         }
     }
 
-    public void OnChoiceLeft(InputAction.CallbackContext context)
+    public void OnChoiceLeft()
     {
         if (isLockChoice) return;
 
@@ -373,7 +372,7 @@ public class SlotGrid : MonoBehaviour
         }
     }
 
-    public void OnChoiceRight(InputAction.CallbackContext context)
+    public void OnChoiceRight()
     {
         if (isLockChoice) return;
 
@@ -420,7 +419,7 @@ public class SlotGrid : MonoBehaviour
 
     ///-----<コントローラーでボタンを操作する系>-----
 
-    public void OnDecisionButton(InputAction.CallbackContext context)
+    public void OnDecisionButton()
     {
         if (!this.gameObject.activeSelf) return;
       
@@ -464,7 +463,7 @@ public class SlotGrid : MonoBehaviour
         currentArrowState = arrowState.useState;
     }
 
-    public void OnQuitChoice(InputAction.CallbackContext context)
+    public void OnQuitChoice()
     {
         HideButton();
     }

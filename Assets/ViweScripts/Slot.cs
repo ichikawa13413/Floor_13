@@ -93,6 +93,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
             Quaternion playerRotation = _player.transform.rotation;
             GameObject itemObject = Instantiate(MyItem.MyItemObject, spawnPos, playerRotation);
 
+            _player.DropItem(MyItem);//ドロップするアイテムをプレイヤーに通知
             MyItem = null;
             itemImage.color = Color.clear;
         }

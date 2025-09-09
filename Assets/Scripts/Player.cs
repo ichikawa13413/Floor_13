@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -72,7 +73,14 @@ public class Player : MonoBehaviour
     private ItemObject currentLookItem;
     private Subject<Item> getItemSubject;//プレイヤーがアイテムをgetしたら通知
     public Observable<Item> getItemObservable => getItemSubject;
-    
+
+    //--インベントをコントローラーで動かす時に使うイベント一覧--
+    public event Action OnPlayerChoiseUP;
+    public event Action OnPlayerChoiseDOWN;
+    public event Action OnPlayerChoiseLEFT;
+    public event Action OnPlayerChoiseRIGHT;
+    public event Action OnPlayerDecisionButton;
+    public event Action OnPlayerQuitChoice;
 
     //インベントリをクローズしたら通知
     private Subject<Unit> closeSubject;
@@ -235,15 +243,15 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started += OnInventory;
-        /*
+
         //--コントローラーでインベントリを操作系--
-        input.actions["ChoiceUp"].started += _slotGrid.OnChoiceUp;
-        input.actions["ChoiceDown"].started += _slotGrid.OnChoiceDown;
-        input.actions["ChoiceLeft"].started += _slotGrid.OnChoiceLeft;
-        input.actions["ChoiceRight"].started += _slotGrid.OnChoiceRight;
-        input.actions["DecisionButton"].started += _slotGrid.OnDecisionButton;
-        input.actions["QuitButton"].started += _slotGrid.OnQuitChoice;
-        */
+        input.actions["ChoiceUp"].started += OnChoiceUp;
+        input.actions["ChoiceDown"].started += OnChoiceDown;
+        input.actions["ChoiceLeft"].started += OnChoiceLeft;
+        input.actions["ChoiceRight"].started += OnChoiceRight;
+        input.actions["DecisionButton"].started += OnDecision;
+        input.actions["QuitButton"].started += OnQuitChoice;
+
         //--アイテムを拾う系--
         input.actions["Get"].started += OnGetItem;
     }
@@ -265,15 +273,15 @@ public class Player : MonoBehaviour
 
         //インベントリ系
         input.actions["Inventory"].started -= OnInventory;
-        /*
+        
         //--コントローラーでインベントリを操作系--
-        input.actions["ChoiceUp"].started -= _slotGrid.OnChoiceUp;
-        input.actions["ChoiceDown"].started -= _slotGrid.OnChoiceDown;
-        input.actions["ChoiceLeft"].started -= _slotGrid.OnChoiceLeft;
-        input.actions["ChoiceRight"].started -= _slotGrid.OnChoiceRight;
-        input.actions["DecisionButton"].started -= _slotGrid.OnDecisionButton;
-        input.actions["QuitButton"].started -= _slotGrid.OnQuitChoice;
-        */
+        input.actions["ChoiceUp"].started -= OnChoiceUp;
+        input.actions["ChoiceDown"].started -= OnChoiceDown;
+        input.actions["ChoiceLeft"].started -= OnChoiceLeft;
+        input.actions["ChoiceRight"].started -= OnChoiceRight;
+        input.actions["DecisionButton"].started -= OnDecision;
+        input.actions["QuitButton"].started -= OnQuitChoice;
+        
         //--アイテムを拾う系--
         input.actions["Get"].started -= OnGetItem;
     }
@@ -466,6 +474,38 @@ public class Player : MonoBehaviour
         direction = Vector2.zero;
     }
 
+    //---スロットをコントローラーで操作した時にSlotGridクラスへ通知---
+    private void OnChoiceUp(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiseUP?.Invoke();
+    }
+
+    private void OnChoiceDown(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiseDOWN?.Invoke();
+    }
+
+    private void OnChoiceLeft(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiseLEFT?.Invoke();
+    }
+
+    private void OnChoiceRight(InputAction.CallbackContext context)
+    {
+        OnPlayerChoiseRIGHT?.Invoke();
+    }
+
+    private void OnDecision(InputAction.CallbackContext context)
+    {
+        OnPlayerDecisionButton?.Invoke();
+    }
+
+    private void OnQuitChoice(InputAction.CallbackContext context)
+    {
+        OnPlayerQuitChoice?.Invoke();
+    }
+
+
     //インベントリ クローズ時の処理
     public void CloseSlotGrid()
     {
@@ -528,6 +568,14 @@ public class Player : MonoBehaviour
         itemList.Add(getItem);
         getItemSubject.OnNext(getItem);
         Destroy(hit.collider.gameObject);
+    }
+
+    public void DropItem(Item item)
+    {
+        if (item != null)
+        {
+            itemList.Remove(item);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
