@@ -66,7 +66,6 @@ public class Player : MonoBehaviour
     //--インベントリ関連--
     [SerializeField] private int limitItem;//プレイヤーが所持できるitem数の上限
     public int playerLimitItem { get => limitItem; }
-    private SlotGrid _slotGrid;
     private bool isOpenInventory;
     private List<Item> itemList;
     public List<Item> playerItemList { get => itemList; }
@@ -75,8 +74,12 @@ public class Player : MonoBehaviour
     public Observable<Item> getItemObservable => getItemSubject;
     public event Action OnInventoryOpen;
     public event Action OnInventoryClose;
-    //todo
-    //インベントリが開いているか閉じているか、現在の状態を管理するステートを作成
+    private enum InventoryState
+    {
+        active,     //インベントリを開いている状態
+        inactive    //インベントリを閉じている状態
+    }
+    private InventoryState CurrentInventoryState;
 
     //--インベントをコントローラーで動かす時に使うイベント一覧--
     public event Action OnPlayerChoiceUP;
@@ -137,9 +140,8 @@ public class Player : MonoBehaviour
     private knockbackState currentKnockback;
 
     [Inject]
-    public void Construct(SlotGrid slotGrid, GameUIManager gameOverUIManager)
+    public void Construct(GameUIManager gameOverUIManager)
     {
-        _slotGrid = slotGrid;
         _gameOverUIManager = gameOverUIManager;
     }
 
@@ -158,6 +160,7 @@ public class Player : MonoBehaviour
         isOpenInventory = false;
         itemList = new List<Item>();
         getItemSubject = new Subject<Item>();
+        CurrentInventoryState = InventoryState.inactive;
 
         closeSubject = new Subject<Unit>();
         keyboardSubject = new Subject<Unit>();
@@ -452,7 +455,7 @@ public class Player : MonoBehaviour
             keyboardSubject.OnNext(Unit.Default);
         }
 
-        if (_slotGrid.gameObject.activeSelf)
+        if (CurrentInventoryState == InventoryState.active)
         {
             CloseSlotGrid();
         }
@@ -465,8 +468,8 @@ public class Player : MonoBehaviour
     //インベントリ オープン時の処理
     public void OpenSlotGrid()
     {
-        //_slotGrid.gameObject.SetActive(true);
         OnInventoryOpen?.Invoke();
+        CurrentInventoryState = InventoryState.active;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -483,8 +486,8 @@ public class Player : MonoBehaviour
     //インベントリ クローズ時の処理
     public void CloseSlotGrid()
     {
-        //_slotGrid.gameObject.SetActive(false);
         OnInventoryClose?.Invoke();
+        CurrentInventoryState = InventoryState.inactive;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
