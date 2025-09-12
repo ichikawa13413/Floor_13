@@ -440,7 +440,7 @@ public class SlotGrid : MonoBehaviour
         Slot currentSlot = slots[currentSlectIndex];
         SetButton(currentSlot);
 
-        //選択したスロットで使うボタンを決定後、ボタンを押したのち
+        //選択されたボタンを押したのち該当する機能を実行
         if (isLockChoice && currentButtonState != buttonState.nullButtonState)
         {
             switch (currentButtonState)

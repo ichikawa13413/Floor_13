@@ -19,7 +19,8 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Image QuitButtonPredab;
     [SerializeField] private Vector3 QuitButtonPos;
 
-    //--slodgridクラスを-
+    //--ゲーム終了時にでる警告画面--
+    [SerializeField] private Image CautionPrefab;
 
     [Inject]
     public void Construct(Canvas canvas, SceneLoadManager sceneLoadManager)
