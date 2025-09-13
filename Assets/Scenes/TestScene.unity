@@ -981,11 +981,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverText: {fileID: 5534026938091015450, guid: 6d9be086f9df9a34180c7e9bcaadd889, type: 3}
-  gameOverTextPos: {x: 0, y: 0, z: 0}
+  gameOverTextPos: {x: 0, y: 20, z: 0}
   ContinueButtonPrefab: {fileID: 1659948691786184238, guid: 493eef20b4ed00948bb63703639c3e3d, type: 3}
-  ContinueButtonPos: {x: 0, y: 0, z: 0}
+  ContinueButtonPos: {x: 180, y: -100, z: 0}
   QuitButtonPredab: {fileID: 7495002135275787585, guid: a986b0af8813d274ca2bce32fe63328a, type: 3}
-  QuitButtonPos: {x: 0, y: 0, z: 0}
+  QuitButtonPos: {x: -180, y: -100, z: 0}
+  CautionPrefab: {fileID: 4956918128282066901, guid: 6b736e481f2cea44dad465c08bb5dc27, type: 3}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
