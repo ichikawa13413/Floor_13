@@ -17,9 +17,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Vector3 gameOverTextPos;
 
     //--ゲームオーバー時に表示されるボタン--
-    [SerializeField] private Image ContinueButtonPrefab;
+    [SerializeField] private Button ContinueButtonPrefab;
     [SerializeField] private Vector3 ContinueButtonPos;
-    [SerializeField] private Image QuitButtonPredab;
+    [SerializeField] private Button QuitButtonPredab;
     [SerializeField] private Vector3 QuitButtonPos;
 
     //--ゲーム終了時にでる警告画面--
@@ -45,25 +45,24 @@ public class GameUIManager : MonoBehaviour
 
     public void CreateGameOverText()
     {
-        var text = Instantiate(gameOverText, _transform);
+        TextMeshProUGUI text = Instantiate(gameOverText, _canvas.transform);
+        text.GetComponent<RectTransform>().anchoredPosition = gameOverTextPos;
     }
 
     //コンテニューボタンとクイットボタンを指定座標に生成
     public void CreateContinueButton()
     {
-        var continueButtonHighlight = Instantiate(ContinueButtonPrefab, _canvas.transform);
-        var quitButtonHighlight = Instantiate(QuitButtonPredab, _canvas.transform);
-
-        Button continueButton = continueButtonHighlight.gameObject.GetComponentInChildren<Button>(false);
-        Button quitButton = quitButtonHighlight.gameObject.GetComponentInChildren<Button>(false);
+        Button continueButton = Instantiate(ContinueButtonPrefab, _canvas.transform);
+        Button quitButton = Instantiate(QuitButtonPredab, _canvas.transform);
 
         continueButton.onClick.AddListener(_sceneLoadManager.ContinueFunction);
         quitButton.onClick.AddListener(CreateCaution);
 
-        continueButtonHighlight.GetComponent<RectTransform>().anchoredPosition = ContinueButtonPos;
-        quitButtonHighlight.GetComponent<RectTransform>().anchoredPosition = QuitButtonPos;
+        continueButton.GetComponent<RectTransform>().anchoredPosition = ContinueButtonPos;
+        quitButton.GetComponent<RectTransform>().anchoredPosition = QuitButtonPos;
     }
 
+    //警告ポップアップを表示する
     private void CreateCaution()
     {
         cautionImage = Instantiate(cautionPrefab, _canvas.transform);
