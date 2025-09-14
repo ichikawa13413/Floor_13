@@ -991,6 +991,8 @@ MonoBehaviour:
   noButtonPrefab: {fileID: 4118670969648185405, guid: f7e71a9d2bc4c6e4fbeb50119f17cfca, type: 3}
   yesButtonPos: {x: -150, y: -80, z: 0}
   noButtonPos: {x: 150, y: -80, z: 0}
+  choiceArrowOffset: {x: -100, y: 0, z: 0}
+  ChoiceArrowPrefab: {fileID: 897751088312938715, guid: a3238b45fc99f9747a824f91c6b4e0ac, type: 3}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

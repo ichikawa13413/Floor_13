@@ -1,6 +1,7 @@
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.UI;
@@ -11,6 +12,14 @@ public class GameUIManager : MonoBehaviour
     private Transform _transform;
     private Canvas _canvas;
     private SceneLoadManager _sceneLoadManager;
+    private Player _player;
+    private enum gameOverUIState
+    {
+        mainSelection,    //Continue・QuitButtonを選択中
+        confirmingQuit,   //警告イメージを表示中
+        hideGameOverUI    //ゲームオーバーUIを非表示中（生存中）  
+    }
+    gameOverUIState currentGameOverUI;
 
     //--ゲームオーバーテキスト--
     [SerializeField] private TextMeshProUGUI gameOverText;
@@ -21,6 +30,8 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Vector3 ContinueButtonPos;
     [SerializeField] private Button QuitButtonPredab;
     [SerializeField] private Vector3 QuitButtonPos;
+    private Button ContinueButton;
+    private Button QuitButton;
 
     //--ゲーム終了時にでる警告画面--
     [SerializeField] private Image cautionPrefab;
@@ -29,50 +40,142 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private Vector3 yesButtonPos;
     [SerializeField] private Vector3 noButtonPos;
     private Image cautionImage;
+    private Button yesButton;
+    private Button noButton;
+
+    //--コントローラーでボタンを操作する時に使う系--
+    [SerializeField] private Vector3 choiceArrowOffset;
+    [SerializeField] private GameObject ChoiceArrowPrefab;
+    private readonly Vector3 CHOICE_ARROW_ROTATION = new Vector3(0, 0, 180);
+    private GameObject ChoiceArrow;
+    private GameObject currentButton;
+    private GameObject lastButton;
 
     [Inject]
-    public void Construct(Canvas canvas, SceneLoadManager sceneLoadManager)
+    public void Construct(Canvas canvas, SceneLoadManager sceneLoadManager, Player player)
     {
         _canvas = canvas;
         _sceneLoadManager = sceneLoadManager;
+        _player = player;
     }
 
     //このクラスでゲームオーバー時に表示されるUIの管理を行う
     private void Awake()
     {
         _transform = transform;
+        currentGameOverUI = gameOverUIState.hideGameOverUI;
+    }
+
+    private void Update()
+    {
+        Debug.Log("<color=red>" + currentGameOverUI + "</color>");
+    }
+
+    private void OnEnable()
+    {
+        if(_player == null) return;
+
+        _player.OnPlayerChoiceLEFT += OnLeftMove;
+        _player .OnPlayerChoiceRIGHT += OnRightMove;
+    }
+
+    private void OnDisable()
+    {
+        if (_player == null) return;
+
+        _player.OnPlayerChoiceLEFT -= OnLeftMove;
+        _player.OnPlayerChoiceRIGHT -= OnRightMove;
     }
 
     public void CreateGameOverText()
     {
         TextMeshProUGUI text = Instantiate(gameOverText, _canvas.transform);
         text.GetComponent<RectTransform>().anchoredPosition = gameOverTextPos;
+        ChangeState(gameOverUIState.mainSelection);
     }
 
     //コンテニューボタンとクイットボタンを指定座標に生成
     public void CreateContinueButton()
     {
-        Button continueButton = Instantiate(ContinueButtonPrefab, _canvas.transform);
-        Button quitButton = Instantiate(QuitButtonPredab, _canvas.transform);
+        ContinueButton = Instantiate(ContinueButtonPrefab, _canvas.transform);
+        QuitButton = Instantiate(QuitButtonPredab, _canvas.transform);
 
-        continueButton.onClick.AddListener(_sceneLoadManager.ContinueFunction);
-        quitButton.onClick.AddListener(CreateCaution);
+        ContinueButton.onClick.AddListener(_sceneLoadManager.ContinueFunction);
+        QuitButton.onClick.AddListener(() => 
+        { 
+            ChangeState(gameOverUIState.confirmingQuit);
+            CreateCaution(); 
+        });
 
-        continueButton.GetComponent<RectTransform>().anchoredPosition = ContinueButtonPos;
-        quitButton.GetComponent<RectTransform>().anchoredPosition = QuitButtonPos;
+        ContinueButton.GetComponent<RectTransform>().anchoredPosition = ContinueButtonPos;
+        QuitButton.GetComponent<RectTransform>().anchoredPosition = QuitButtonPos;
+
+        CreateChoiceArrow(QuitButton.GetComponent<RectTransform>().anchoredPosition);
+
+        EventSystem.current.SetSelectedGameObject(QuitButton.gameObject);
     }
 
     //警告ポップアップを表示する
     private void CreateCaution()
     {
         cautionImage = Instantiate(cautionPrefab, _canvas.transform);
-        Button yesButton = Instantiate(yesButtonPrefab, cautionImage.transform);
-        Button noButton = Instantiate(noButtonPrefab, cautionImage.transform);
+        yesButton = Instantiate(yesButtonPrefab, cautionImage.transform);
+        noButton = Instantiate(noButtonPrefab, cautionImage.transform);
 
         yesButton.GetComponent<RectTransform>().anchoredPosition = yesButtonPos;
         noButton.GetComponent<RectTransform>().anchoredPosition= noButtonPos;
 
         yesButton.onClick.AddListener(_sceneLoadManager.QuitFunction);
-        noButton.onClick.AddListener(() => Destroy(cautionImage.gameObject));
+        noButton.onClick.AddListener(() => 
+        { 
+            Destroy(cautionImage.gameObject); 
+            ChangeState(gameOverUIState.mainSelection); 
+        });
+    }
+
+    private void ChangeState(gameOverUIState wantState)
+    {
+        currentGameOverUI = wantState;
+    }
+
+    private void CreateChoiceArrow(Vector3 buttonPos)
+    {
+        ChoiceArrow = Instantiate(ChoiceArrowPrefab,_canvas.transform);
+        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = buttonPos + choiceArrowOffset;
+        ChoiceArrow.transform.localEulerAngles = CHOICE_ARROW_ROTATION;
+    }
+
+    /// <summary>
+    /// 現在選択中のボタンの横にChoiceArrowを置く
+    /// </summary>
+    /// <param name="target">現在選択中のボタン</param>
+    private void SetPositionArrow(GameObject target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = target.transform.position + choiceArrowOffset;
+    }
+
+    private void OnQuit()
+    {
+
+    }
+
+    private void OnContinue()
+    {
+
+    }
+
+    private void OnLeftMove()
+    {
+        
+    }
+
+    private void OnRightMove()
+    {
+
     }
 }

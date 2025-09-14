@@ -139,6 +139,8 @@ public class Player : MonoBehaviour
     }
     private knockbackState currentKnockback;
 
+    public event Action OnketteiAction;
+
     [Inject]
     public void Construct(GameUIManager gameOverUIManager)
     {
@@ -191,7 +193,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            input.enabled = true;
+            input.enabled = true;//こいつのせいで死んでも動ける
         }
 
         //inventory使用中は操作不可
@@ -292,6 +294,13 @@ public class Player : MonoBehaviour
         
         //--アイテムを拾う系--
         input.actions["Get"].started -= OnGetItem;
+    }
+
+    private void Onkettei(InputAction.CallbackContext context)
+    {
+        if(currentLifeState != lifeState.death) return;
+
+        OnketteiAction?.Invoke();
     }
     
     //プレイヤーの移動処理
@@ -502,7 +511,9 @@ public class Player : MonoBehaviour
         closeSubject.OnNext(Unit.Default);
     }
 
-    //---スロットをコントローラーで操作した時にSlotGridクラスへ通知---
+    /// <summary>
+    /// スロットをコントローラーで操作した時にSlotGridクラスへ通知死亡時のボタン選択に流用
+    /// </summary>
     private void OnChoiceUp(InputAction.CallbackContext context)
     {
         OnPlayerChoiceUP?.Invoke();
@@ -513,14 +524,30 @@ public class Player : MonoBehaviour
         OnPlayerChoiceDOWN?.Invoke();
     }
 
+    //死亡時のボタン選択に流用
     private void OnChoiceLeft(InputAction.CallbackContext context)
     {
-        OnPlayerChoiceLEFT?.Invoke();
+        if (currentLifeState == lifeState.death)
+        {
+            OnketteiAction?.Invoke();
+        }
+        else
+        {
+            OnPlayerChoiceLEFT?.Invoke();
+        }
     }
 
+    //死亡時のボタン選択に流用
     private void OnChoiceRight(InputAction.CallbackContext context)
     {
-        OnPlayerChoiceRIGHT?.Invoke();
+        if (currentLifeState == lifeState.death)
+        {
+            OnketteiAction?.Invoke();
+        }
+        else
+        {
+            OnPlayerChoiceRIGHT?.Invoke();
+        }
     }
 
     private void OnDecision(InputAction.CallbackContext context)
