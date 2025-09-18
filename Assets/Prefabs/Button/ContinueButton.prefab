@@ -94,7 +94,7 @@ MonoBehaviour:
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnLeft: {fileID: 5069058292360729443, guid: a986b0af8813d274ca2bce32fe63328a, type: 3}
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:

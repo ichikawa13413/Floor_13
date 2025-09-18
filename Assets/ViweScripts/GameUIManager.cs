@@ -44,11 +44,10 @@ public class GameUIManager : MonoBehaviour
     private Button noButton;
 
     //--コントローラーでボタンを操作する時に使う系--
-    [SerializeField] private Vector3 choiceArrowOffset;
+    [SerializeField] private Vector2 choiceArrowOffset;
     [SerializeField] private GameObject ChoiceArrowPrefab;
     private readonly Vector3 CHOICE_ARROW_ROTATION = new Vector3(0, 0, 180);
     private GameObject ChoiceArrow;
-    private GameObject currentButton;
     private GameObject lastButton;
 
     [Inject]
@@ -69,6 +68,7 @@ public class GameUIManager : MonoBehaviour
     private void Update()
     {
         Debug.Log("<color=red>" + currentGameOverUI + "</color>");
+        Debug.Log(EventSystem.current.currentSelectedGameObject);
     }
 
     private void OnEnable()
@@ -94,7 +94,10 @@ public class GameUIManager : MonoBehaviour
         ChangeState(gameOverUIState.mainSelection);
     }
 
-    //コンテニューボタンとクイットボタンを指定座標に生成
+    /// <summary>
+    /// コンテニューボタンとクイットボタンを指定座標に生成、各ボタンに機能を追加
+    /// その後、ChoiceArrowを生成、初期位置はQuitButton
+    /// </summary>
     public void CreateContinueButton()
     {
         ContinueButton = Instantiate(ContinueButtonPrefab, _canvas.transform);
@@ -110,9 +113,8 @@ public class GameUIManager : MonoBehaviour
         ContinueButton.GetComponent<RectTransform>().anchoredPosition = ContinueButtonPos;
         QuitButton.GetComponent<RectTransform>().anchoredPosition = QuitButtonPos;
 
-        CreateChoiceArrow(QuitButton.GetComponent<RectTransform>().anchoredPosition);
-
-        EventSystem.current.SetSelectedGameObject(QuitButton.gameObject);
+        SetPositionArrow(QuitButton.gameObject);
+        Debug.Log("処理を実行しました");
     }
 
     //警告ポップアップを表示する
@@ -138,15 +140,9 @@ public class GameUIManager : MonoBehaviour
         currentGameOverUI = wantState;
     }
 
-    private void CreateChoiceArrow(Vector3 buttonPos)
-    {
-        ChoiceArrow = Instantiate(ChoiceArrowPrefab,_canvas.transform);
-        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = buttonPos + choiceArrowOffset;
-        ChoiceArrow.transform.localEulerAngles = CHOICE_ARROW_ROTATION;
-    }
-
     /// <summary>
-    /// 現在選択中のボタンの横にChoiceArrowを置く
+    /// 現在選択中のボタンの横にChoiceArrowを置く(まだ生成していない場合は生成する）
+    /// EventSystemでtargetを選択中にする、最後に選択したボタン（lastButton）にtargetを代入
     /// </summary>
     /// <param name="target">現在選択中のボタン</param>
     private void SetPositionArrow(GameObject target)
@@ -156,7 +152,18 @@ public class GameUIManager : MonoBehaviour
             return;
         }
 
-        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = target.transform.position + choiceArrowOffset;
+        if(ChoiceArrow == null)
+        {
+            ChoiceArrow = Instantiate(ChoiceArrowPrefab, _canvas.transform);
+            ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = target.transform.position;
+            ChoiceArrow.GetComponent<RectTransform>().anchoredPosition += choiceArrowOffset;
+            ChoiceArrow.transform.localEulerAngles = CHOICE_ARROW_ROTATION;
+        }
+
+        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = target.GetComponent<RectTransform>().anchoredPosition;
+        ChoiceArrow.GetComponent<RectTransform>().anchoredPosition += choiceArrowOffset;
+        EventSystem.current.SetSelectedGameObject(target);
+        lastButton = target;
     }
 
     private void OnQuit()
@@ -171,7 +178,15 @@ public class GameUIManager : MonoBehaviour
 
     private void OnLeftMove()
     {
-        
+        GameObject currentButton = EventSystem.current.currentSelectedGameObject;
+
+        if(lastButton == currentButton)
+        {
+            Debug.Log("<color=red>" + "これ以上左にいけません" + "</color>");
+            return;
+        }
+
+
     }
 
     private void OnRightMove()

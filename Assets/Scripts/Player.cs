@@ -139,7 +139,7 @@ public class Player : MonoBehaviour
     }
     private knockbackState currentKnockback;
 
-    public event Action OnketteiAction;
+    public event Action OnUISubmitAction;
 
     [Inject]
     public void Construct(GameUIManager gameOverUIManager)
@@ -189,11 +189,11 @@ public class Player : MonoBehaviour
         if (currentKnockback == knockbackState.knockbackActive)
         {
             rb.AddForce(knockbackDirection,ForceMode.Impulse);
-            input.enabled = false;
+            //input.enabled = false;
         }
         else
         {
-            input.enabled = true;//こいつのせいで死んでも動ける
+            //input.enabled = true;//こいつのせいで死んでも動ける
         }
 
         //inventory使用中は操作不可
@@ -206,7 +206,7 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Debug.Log(currentLifeState);
-
+        Debug.Log(input.currentActionMap);
         //地面判定を行う
         isGround = Physics.CheckSphere(_transform.position, 0.1f, groundLayer);
 
@@ -264,6 +264,9 @@ public class Player : MonoBehaviour
 
         //--アイテムを拾う系--
         input.actions["Get"].started += OnGetItem;
+
+        //input.actions["Submit"].started += OnUISubmit;
+        //input.actions["Navigate"].started += OnNavigate;
     }
 
     private void OnDisable()
@@ -294,15 +297,23 @@ public class Player : MonoBehaviour
         
         //--アイテムを拾う系--
         input.actions["Get"].started -= OnGetItem;
+
+        //input.actions["Submit"].started -= OnUISubmit;
+        //input.actions["Navigate"].started -= OnNavigate;
     }
 
-    private void Onkettei(InputAction.CallbackContext context)
+    private void OnUISubmit(InputAction.CallbackContext context)
     {
         if(currentLifeState != lifeState.death) return;
 
-        OnketteiAction?.Invoke();
+        OnUISubmitAction?.Invoke();
     }
-    
+
+    private void OnUIChoice(InputAction.CallbackContext context)
+    {
+
+    }
+
     //プレイヤーの移動処理
     private void MoveInput()
     {
@@ -529,7 +540,7 @@ public class Player : MonoBehaviour
     {
         if (currentLifeState == lifeState.death)
         {
-            OnketteiAction?.Invoke();
+            OnUISubmitAction?.Invoke();
         }
         else
         {
@@ -542,7 +553,7 @@ public class Player : MonoBehaviour
     {
         if (currentLifeState == lifeState.death)
         {
-            OnketteiAction?.Invoke();
+            OnUISubmitAction?.Invoke();
         }
         else
         {
@@ -733,12 +744,14 @@ public class Player : MonoBehaviour
                 break;
             case lifeState.death:
                 //deathステートに移行した時に実行したい処理を追加
+                input.SwitchCurrentActionMap("UI");
+
                 _gameOverUIManager.CreateGameOverText();
                 _gameOverUIManager.CreateContinueButton();
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 //今はenabledで操作を無効かしているが、ゲームオーバー時はコンテニューなどの操作を出来るようにするため変更予定
-                input.enabled = false;
+                //input.enabled = false;
                 break;
             default:
                 break;
@@ -751,5 +764,10 @@ public class Player : MonoBehaviour
         currentInvincible = invincibleState.invincible;
         await UniTask.WaitForSeconds(invincibleTime);
         currentInvincible = invincibleState.normal;
+    }
+
+    private void OnNavigate(InputAction.CallbackContext context)
+    {
+        Debug.Log("Navigateが実行されました");
     }
 }
