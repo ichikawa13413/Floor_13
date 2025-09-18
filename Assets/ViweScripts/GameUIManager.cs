@@ -69,22 +69,13 @@ public class GameUIManager : MonoBehaviour
     {
         Debug.Log("<color=red>" + currentGameOverUI + "</color>");
         Debug.Log(EventSystem.current.currentSelectedGameObject);
-    }
-
-    private void OnEnable()
-    {
-        if(_player == null) return;
-
-        _player.OnPlayerChoiceLEFT += OnLeftMove;
-        _player .OnPlayerChoiceRIGHT += OnRightMove;
-    }
-
-    private void OnDisable()
-    {
-        if (_player == null) return;
-
-        _player.OnPlayerChoiceLEFT -= OnLeftMove;
-        _player.OnPlayerChoiceRIGHT -= OnRightMove;
+        //choicearrowを現在選択中のボタンにフォーカスする
+        if (currentGameOverUI == gameOverUIState.mainSelection || currentGameOverUI == gameOverUIState.confirmingQuit)
+        {
+            GameObject currentGameObject = EventSystem.current.currentSelectedGameObject;
+            ChoiceArrow.GetComponent<RectTransform>().anchoredPosition = 
+                currentGameObject.GetComponent<RectTransform>().anchoredPosition + choiceArrowOffset;
+        }
     }
 
     public void CreateGameOverText()
@@ -131,8 +122,11 @@ public class GameUIManager : MonoBehaviour
         noButton.onClick.AddListener(() => 
         { 
             Destroy(cautionImage.gameObject); 
-            ChangeState(gameOverUIState.mainSelection); 
+            ChangeState(gameOverUIState.mainSelection);
+            EventSystem.current.SetSelectedGameObject(QuitButton.gameObject);
         });
+
+        EventSystem.current.SetSelectedGameObject(yesButton.gameObject);
     }
 
     private void ChangeState(gameOverUIState wantState)
@@ -164,33 +158,5 @@ public class GameUIManager : MonoBehaviour
         ChoiceArrow.GetComponent<RectTransform>().anchoredPosition += choiceArrowOffset;
         EventSystem.current.SetSelectedGameObject(target);
         lastButton = target;
-    }
-
-    private void OnQuit()
-    {
-
-    }
-
-    private void OnContinue()
-    {
-
-    }
-
-    private void OnLeftMove()
-    {
-        GameObject currentButton = EventSystem.current.currentSelectedGameObject;
-
-        if(lastButton == currentButton)
-        {
-            Debug.Log("<color=red>" + "これ以上左にいけません" + "</color>");
-            return;
-        }
-
-
-    }
-
-    private void OnRightMove()
-    {
-
     }
 }
