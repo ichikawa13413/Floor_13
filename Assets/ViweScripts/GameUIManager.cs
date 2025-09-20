@@ -2,6 +2,7 @@ using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.UI;
@@ -63,13 +64,15 @@ public class GameUIManager : MonoBehaviour
     {
         _transform = transform;
         currentGameOverUI = gameOverUIState.hideGameOverUI;
+
+
     }
 
     private void Update()
     {
         Debug.Log("<color=red>" + currentGameOverUI + "</color>");
         Debug.Log(EventSystem.current.currentSelectedGameObject);
-
+        /*
         if (EventSystem.current.currentSelectedGameObject == null)
         {
             //todo
@@ -77,7 +80,20 @@ public class GameUIManager : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(lastButton);
         }
 
-        SetChoiceArrow();
+        if (EventSystem.current.currentSelectedGameObject != lastButton)
+        {
+            lastButton = EventSystem.current.currentSelectedGameObject;
+        }*/
+    }
+
+    private void OnEnable()
+    {
+        _player.MyInput.onActionTriggered += SetChoiceArrow;
+    }
+
+    private void OnDisable()
+    {
+        _player.MyInput.onActionTriggered -= SetChoiceArrow;
     }
 
     public void CreateGameOverText()
@@ -140,7 +156,6 @@ public class GameUIManager : MonoBehaviour
     private void ChangeCurrentButton(GameObject wantButton)
     {
         EventSystem.current.SetSelectedGameObject(wantButton);
-        lastButton = wantButton;
     }
 
     /// <summary>
@@ -170,15 +185,30 @@ public class GameUIManager : MonoBehaviour
 
     /// <summary>
     /// 現在選択中のボタンにアローをセットする
+    /// プレイヤーの入力を受け取ったら実行される
     /// </summary>
-    private void SetChoiceArrow()
+    private void SetChoiceArrow(InputAction.CallbackContext context)
     {
-        //現在選択中のボタンの横にアローを設置
-        if (currentGameOverUI == gameOverUIState.mainSelection || currentGameOverUI == gameOverUIState.Caution)
+        if(_player?.MyInput?.currentActionMap?.name != "UI")
         {
-            GameObject currentGameObject = EventSystem.current.currentSelectedGameObject;
-            ChoiceArrow.GetComponent<RectTransform>().anchoredPosition =
-                currentGameObject.GetComponent<RectTransform>().anchoredPosition + choiceArrowOffset;
+            return;
+        }
+
+        GameObject currentObject = EventSystem.current.currentSelectedGameObject;
+
+        //マウスでボタン以外をクリックしてしまった時の処理
+        if (currentObject == null && lastButton != null)
+        {
+            EventSystem.current.SetSelectedGameObject(lastButton);
+            currentObject = lastButton;
+        }
+
+        //選択肢を変えた時の処理
+        if (currentObject != lastButton && currentObject != null)
+        {
+            ChoiceArrow.transform.position = currentObject.transform.position;
+            ChoiceArrow.transform.position += new Vector3(choiceArrowOffset.x, choiceArrowOffset.y, 0);
+            lastButton = currentObject;
         }
     }
 }

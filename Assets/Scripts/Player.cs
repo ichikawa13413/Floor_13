@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
 
+[DefaultExecutionOrder(-101)]
 public class Player : MonoBehaviour
 {
     private Transform _transform;
@@ -764,10 +765,5 @@ public class Player : MonoBehaviour
         currentInvincible = invincibleState.invincible;
         await UniTask.WaitForSeconds(invincibleTime);
         currentInvincible = invincibleState.normal;
-    }
-
-    private void OnNavigate(InputAction.CallbackContext context)
-    {
-        Debug.Log("NavigateÇ™é¿çsÇ≥ÇÍÇ‹ÇµÇΩ");
     }
 }
